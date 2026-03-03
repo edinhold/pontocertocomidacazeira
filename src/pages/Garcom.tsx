@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { LogOut, Plus, Minus, Send, Trash2 } from "lucide-react";
+import { LogOut, Plus, Minus, Send } from "lucide-react";
 import { toast } from "sonner";
+import { adicionarPedido, type ItemPedido } from "@/lib/pedidosStore";
 
 const mesas = [1, 2, 3, 4, 5, 6, 7, 8];
 const cardapio = [
@@ -18,13 +18,6 @@ const cardapio = [
   { id: "5", nome: "Suco de Laranja", preco: 8.0, tipo: "bebida" },
   { id: "6", nome: "Cerveja 600ml", preco: 12.0, tipo: "bebida" },
 ];
-
-interface ItemPedido {
-  id: string;
-  nome: string;
-  preco: number;
-  quantidade: number;
-}
 
 const Garcom = () => {
   const navigate = useNavigate();
@@ -48,6 +41,19 @@ const Garcom = () => {
   const enviarPedido = () => {
     if (!mesaSelecionada) { toast.error("Selecione uma mesa"); return; }
     if (itens.length === 0) { toast.error("Adicione itens ao pedido"); return; }
+
+    const agora = new Date();
+    const pedido = {
+      id: crypto.randomUUID().slice(0, 8),
+      mesa: Number(mesaSelecionada),
+      itens: [...itens],
+      total,
+      status: "pendente" as const,
+      hora: agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      criadoEm: agora.toISOString(),
+    };
+
+    adicionarPedido(pedido);
     toast.success(`Pedido enviado para a cozinha! Mesa ${mesaSelecionada}`);
     setItens([]);
     setMesaSelecionada("");
