@@ -1,30 +1,66 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Printer, Check, ChefHat } from "lucide-react";
+import { LogOut, Printer, Check, ChefHat, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
+import { getPedidos, atualizarStatusPedido, type Pedido } from "@/lib/pedidosStore";
 
-interface Pedido {
-  id: string;
-  mesa: number;
-  itens: { nome: string; quantidade: number }[];
-  hora: string;
-  status: "pendente" | "preparando" | "pronto";
-}
+const playNotificationSound = () => {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const playTone = (freq: number, start: number, dur: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = "sine";
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + start);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + start + dur);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur);
+    };
+    playTone(880, 0, 0.15);
+    playTone(1100, 0.18, 0.15);
+    playTone(1320, 0.36, 0.25);
+  } catch {}
+};
 
 const Cozinha = () => {
   const navigate = useNavigate();
-  const [pedidos, setPedidos] = useState<Pedido[]>([
-    { id: "001", mesa: 2, itens: [{ nome: "Feijoada Completa", quantidade: 1 }, { nome: "Coca-Cola 350ml", quantidade: 2 }], hora: "12:30", status: "pendente" },
-    { id: "002", mesa: 5, itens: [{ nome: "Frango à Parmegiana", quantidade: 2 }, { nome: "Suco de Laranja", quantidade: 2 }], hora: "12:45", status: "pendente" },
-    { id: "003", mesa: 3, itens: [{ nome: "Bife Acebolado", quantidade: 1 }], hora: "13:00", status: "preparando" },
-  ]);
+  const [pedidos, setPedidos] = useState<Pedido[]>(getPedidos());
+  const [somAtivo, setSomAtivo] = useState(true);
+  const prevPendentesRef = useRef<string[]>([]);
+
+  const carregarPedidos = useCallback(() => {
+    const todos = getPedidos();
+    setPedidos(todos);
+
+    const pendenteIds = todos.filter(p => p.status === "pendente").map(p => p.id);
+    const novos = pendenteIds.filter(id => !prevPendentesRef.current.includes(id));
+    if (novos.length > 0 && somAtivo) {
+      playNotificationSound();
+      toast.info(`🔔 ${novos.length} novo(s) pedido(s)!`);
+    }
+    prevPendentesRef.current = pendenteIds;
+  }, [somAtivo]);
+
+  useEffect(() => {
+    carregarPedidos();
+    const interval = setInterval(carregarPedidos, 3000);
+    window.addEventListener("pedidos-updated", carregarPedidos);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("pedidos-updated", carregarPedidos);
+    };
+  }, [carregarPedidos]);
 
   const updateStatus = (id: string, status: Pedido["status"]) => {
-    setPedidos((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)));
+    atualizarStatusPedido(id, status);
+    carregarPedidos();
     if (status === "preparando") toast.info("Pedido aceito!");
     if (status === "pronto") toast.success("Pedido pronto!");
   };
@@ -60,7 +96,12 @@ const Cozinha = () => {
           <ChefHat className="size-5" />
           <span className="font-semibold">Painel da Cozinha</span>
         </div>
-        <Button variant="ghost" size="icon" onClick={() => navigate("/")}><LogOut className="size-4" /></Button>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" onClick={() => setSomAtivo(!somAtivo)} title={somAtivo ? "Desativar som" : "Ativar som"}>
+            {somAtivo ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/")}><LogOut className="size-4" /></Button>
+        </div>
       </header>
       <div className="p-4 max-w-6xl mx-auto">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
