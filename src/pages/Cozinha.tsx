@@ -75,6 +75,7 @@ const Cozinha = () => {
         <p><strong>Mesa:</strong> ${pedido.mesa}</p>
         <p><strong>Hora:</strong> ${pedido.hora}</p><hr/>
         ${pedido.itens.map((i) => `<div class="item"><span>${i.nome}</span><span>x${i.quantidade}</span></div>${i.observacao ? `<div style="font-size:11px;color:#666;padding-left:8px">📝 ${i.observacao}</div>` : ""}`).join("")}
+        ${pedido.observacaoGeral ? `<hr/><div style="font-size:11px;color:#666">📋 Obs. geral: ${pedido.observacaoGeral}</div>` : ""}
         <hr/><p style="text-align:center;font-size:12px">*** Ponto Certo ***</p>
       </body></html>
     `;
@@ -128,6 +129,11 @@ const Cozinha = () => {
                     </div>
                   ))}
                 </div>
+                {pedido.observacaoGeral && (
+                  <div className="bg-muted/50 rounded p-2 text-xs italic border">
+                    📋 <strong>Obs. geral:</strong> {pedido.observacaoGeral}
+                  </div>
+                )}
                 <div className="flex gap-2">
                   {pedido.status === "pendente" && (
                     <Button size="sm" className="flex-1" onClick={() => updateStatus(pedido.id, "preparando")}>
