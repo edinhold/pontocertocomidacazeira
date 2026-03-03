@@ -74,7 +74,7 @@ const Cozinha = () => {
         <p><strong>Pedido:</strong> #${pedido.id}</p>
         <p><strong>Mesa:</strong> ${pedido.mesa}</p>
         <p><strong>Hora:</strong> ${pedido.hora}</p><hr/>
-        ${pedido.itens.map((i) => `<div class="item"><span>${i.nome}</span><span>x${i.quantidade}</span></div>`).join("")}
+        ${pedido.itens.map((i) => `<div class="item"><span>${i.nome}</span><span>x${i.quantidade}</span></div>${i.observacao ? `<div style="font-size:11px;color:#666;padding-left:8px">📝 ${i.observacao}</div>` : ""}`).join("")}
         <hr/><p style="text-align:center;font-size:12px">*** Ponto Certo ***</p>
       </body></html>
     `;
@@ -117,9 +117,14 @@ const Cozinha = () => {
               <CardContent className="space-y-3">
                 <div className="space-y-1">
                   {pedido.itens.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-sm">
-                      <span>{item.nome}</span>
-                      <span className="font-medium">x{item.quantidade}</span>
+                    <div key={idx} className="space-y-0.5">
+                      <div className="flex justify-between text-sm">
+                        <span>{item.nome}</span>
+                        <span className="font-medium">x{item.quantidade}</span>
+                      </div>
+                      {item.observacao && (
+                        <p className="text-xs text-muted-foreground italic pl-2">📝 {item.observacao}</p>
+                      )}
                     </div>
                   ))}
                 </div>
