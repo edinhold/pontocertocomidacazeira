@@ -1,3 +1,5 @@
+import { registrarVenda } from "./vendasStore";
+
 export interface ItemPedido {
   id: string;
   nome: string;
@@ -58,6 +60,35 @@ export function getPedidosPorMesa(mesa: number): Pedido[] {
 }
 
 export function fecharMesa(mesa: number) {
-  const pedidos = getPedidos().filter((p) => p.mesa !== mesa);
-  salvarPedidos(pedidos);
+  const todos = getPedidos();
+  const pedidosMesa = todos.filter((p) => p.mesa === mesa);
+
+  // Registrar venda consolidada da mesa
+  if (pedidosMesa.length > 0) {
+    const itensConsolidados = pedidosMesa.flatMap((p) =>
+      p.itens.map((item) => ({
+        nome: item.nome,
+        preco: item.preco,
+        quantidade: item.quantidade,
+        observacao: item.observacao,
+      }))
+    );
+    const totalMesa = pedidosMesa.reduce((sum, p) => sum + p.total, 0);
+    const observacoes = pedidosMesa
+      .filter((p) => p.observacaoGeral)
+      .map((p) => p.observacaoGeral)
+      .join("; ");
+
+    registrarVenda({
+      id: `V${Date.now()}`,
+      mesa,
+      itens: itensConsolidados,
+      total: totalMesa,
+      fechadoEm: new Date().toISOString(),
+      observacaoGeral: observacoes || undefined,
+    });
+  }
+
+  const restantes = todos.filter((p) => p.mesa !== mesa);
+  salvarPedidos(restantes);
 }

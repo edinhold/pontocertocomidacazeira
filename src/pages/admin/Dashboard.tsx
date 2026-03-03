@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DollarSign, ShoppingBag, TrendingUp, Users, Printer, Lock, Calendar, CalendarDays, CalendarRange } from "lucide-react";
 import { toast } from "sonner";
 import { getPedidos, type Pedido } from "@/lib/pedidosStore";
+import { getVendas, type Venda } from "@/lib/vendasStore";
 
 const isSameDay = (d1: Date, d2: Date) =>
   d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
@@ -30,43 +31,55 @@ const isSameMonth = (d1: Date, d2: Date) =>
 
 const Dashboard = () => {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [vendas, setVendas] = useState<Venda[]>([]);
   const [diaFechado, setDiaFechado] = useState(false);
   const [periodo, setPeriodo] = useState<"dia" | "semana" | "mes">("dia");
 
   useEffect(() => {
-    const load = () => setPedidos(getPedidos());
-    load();
-    window.addEventListener("pedidos-updated", load);
-    return () => window.removeEventListener("pedidos-updated", load);
+    const loadPedidos = () => setPedidos(getPedidos());
+    const loadVendas = () => setVendas(getVendas());
+    loadPedidos();
+    loadVendas();
+    window.addEventListener("pedidos-updated", loadPedidos);
+    window.addEventListener("vendas-updated", loadVendas);
+    return () => {
+      window.removeEventListener("pedidos-updated", loadPedidos);
+      window.removeEventListener("vendas-updated", loadVendas);
+    };
   }, []);
 
   const now = new Date();
 
+  const filtrarPorPeriodo = (dataStr: string) => {
+    const data = new Date(dataStr);
+    if (periodo === "dia") return isSameDay(data, now);
+    if (periodo === "semana") return isThisWeek(data, now);
+    return isSameMonth(data, now);
+  };
+
   const pedidosFiltrados = useMemo(() => {
-    return pedidos.filter((p) => {
-      const data = new Date(p.criadoEm);
-      if (periodo === "dia") return isSameDay(data, now);
-      if (periodo === "semana") return isThisWeek(data, now);
-      return isSameMonth(data, now);
-    });
+    return pedidos.filter((p) => filtrarPorPeriodo(p.criadoEm));
   }, [pedidos, periodo]);
 
-  const pedidosProntos = pedidosFiltrados.filter((p) => p.status === "pronto");
-  const totalVendas = pedidosProntos.reduce((sum, p) => sum + p.total, 0);
-  const totalPedidos = pedidosFiltrados.length;
+  const vendasFiltradas = useMemo(() => {
+    return vendas.filter((v) => filtrarPorPeriodo(v.fechadoEm));
+  }, [vendas, periodo]);
+
+  const totalVendas = vendasFiltradas.reduce((sum, v) => sum + v.total, 0);
+  const totalVendasCount = vendasFiltradas.length;
+  const totalPedidosAtivos = pedidosFiltrados.length;
 
   const periodoLabel = periodo === "dia" ? "Hoje" : periodo === "semana" ? "Esta Semana" : "Este Mês";
 
   const stats = [
     { title: `Vendas ${periodoLabel}`, value: `R$ ${totalVendas.toFixed(2).replace(".", ",")}`, icon: DollarSign },
-    { title: `Pedidos ${periodoLabel}`, value: totalPedidos.toString(), icon: ShoppingBag },
-    { title: "Ticket Médio", value: totalPedidos > 0 ? `R$ ${(totalVendas / totalPedidos).toFixed(2).replace(".", ",")}` : "R$ 0,00", icon: TrendingUp },
-    { title: "Pedidos Prontos", value: pedidosProntos.length.toString(), icon: Users },
+    { title: `Mesas Fechadas ${periodoLabel}`, value: totalVendasCount.toString(), icon: ShoppingBag },
+    { title: "Ticket Médio", value: totalVendasCount > 0 ? `R$ ${(totalVendas / totalVendasCount).toFixed(2).replace(".", ",")}` : "R$ 0,00", icon: TrendingUp },
+    { title: `Pedidos Ativos`, value: totalPedidosAtivos.toString(), icon: Users },
   ];
 
   const imprimirRelatorio = () => {
-    const prontos = pedidosFiltrados.filter((p) => p.status === "pronto");
-    const totalPrint = prontos.reduce((sum, p) => sum + p.total, 0);
+    const totalPrint = vendasFiltradas.reduce((sum, v) => sum + v.total, 0);
     const agora = new Date();
     const dataFormatada = agora.toLocaleDateString("pt-BR");
     const horaFormatada = agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
@@ -102,12 +115,12 @@ const Dashboard = () => {
               <tr><th>#</th><th>Mesa</th><th>Itens</th><th class="text-right">Total</th></tr>
             </thead>
             <tbody>
-              ${prontos.map((p, i) => `
+              ${vendasFiltradas.map((v, i) => `
                 <tr>
                   <td>${i + 1}</td>
-                  <td>${p.mesa}</td>
-                  <td>${p.itens.map(it => it.nome).join(", ")}</td>
-                  <td class="text-right">R$ ${p.total.toFixed(2)}</td>
+                  <td>${v.mesa}</td>
+                  <td>${v.itens.map(it => it.nome).join(", ")}</td>
+                  <td class="text-right">R$ ${v.total.toFixed(2)}</td>
                 </tr>
               `).join("")}
             </tbody>
@@ -115,17 +128,17 @@ const Dashboard = () => {
           <div class="divider"></div>
           <table>
             <tr class="total-row">
-              <td>Total de Pedidos:</td>
-              <td class="text-right">${prontos.length}</td>
+              <td>Mesas Fechadas:</td>
+              <td class="text-right">${vendasFiltradas.length}</td>
             </tr>
             <tr class="total-row">
               <td>Total em Vendas:</td>
               <td class="text-right">R$ ${totalPrint.toFixed(2)}</td>
             </tr>
-            ${prontos.length > 0 ? `
+            ${vendasFiltradas.length > 0 ? `
             <tr>
               <td>Ticket Médio:</td>
-              <td class="text-right">R$ ${(totalPrint / prontos.length).toFixed(2)}</td>
+              <td class="text-right">R$ ${(totalPrint / vendasFiltradas.length).toFixed(2)}</td>
             </tr>` : ""}
           </table>
           <div class="divider"></div>
@@ -219,12 +232,12 @@ const Dashboard = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Pedidos - {periodoLabel}</CardTitle>
+          <CardTitle>Vendas Fechadas - {periodoLabel}</CardTitle>
         </CardHeader>
         <CardContent>
-          {pedidosFiltrados.length === 0 ? (
+          {vendasFiltradas.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">
-              Nenhum pedido registrado neste período.
+              Nenhuma venda registrada neste período. As vendas são computadas ao fechar uma mesa.
             </p>
           ) : (
             <Table>
@@ -233,24 +246,16 @@ const Dashboard = () => {
                   <TableHead>Mesa</TableHead>
                   <TableHead>Itens</TableHead>
                   <TableHead>Total</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Hora</TableHead>
+                  <TableHead>Fechado em</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pedidosFiltrados.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell>{p.mesa}</TableCell>
-                    <TableCell>{p.itens.map(it => it.nome).join(", ")}</TableCell>
-                    <TableCell>R$ {p.total.toFixed(2).replace(".", ",")}</TableCell>
-                    <TableCell>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        p.status === "pronto" ? "bg-green-100 text-green-700" :
-                        p.status === "preparando" ? "bg-primary/10 text-primary" :
-                        "bg-yellow-100 text-yellow-700"
-                      }`}>{p.status}</span>
-                    </TableCell>
-                    <TableCell>{p.hora}</TableCell>
+                {vendasFiltradas.map((v) => (
+                  <TableRow key={v.id}>
+                    <TableCell>Mesa {v.mesa}</TableCell>
+                    <TableCell>{v.itens.map(it => `${it.quantidade}x ${it.nome}`).join(", ")}</TableCell>
+                    <TableCell>R$ {v.total.toFixed(2).replace(".", ",")}</TableCell>
+                    <TableCell>{new Date(v.fechadoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
