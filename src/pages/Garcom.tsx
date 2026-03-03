@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LogOut, Plus, Minus, Send } from "lucide-react";
+import { LogOut, Plus, Minus, Send, MessageSquare } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { adicionarPedido, type ItemPedido } from "@/lib/pedidosStore";
 
@@ -23,6 +24,7 @@ const Garcom = () => {
   const navigate = useNavigate();
   const [mesaSelecionada, setMesaSelecionada] = useState("");
   const [itens, setItens] = useState<ItemPedido[]>([]);
+  const [observacaoAberta, setObservacaoAberta] = useState<string | null>(null);
 
   const addItem = (item: typeof cardapio[0]) => {
     setItens((prev) => {
@@ -112,14 +114,30 @@ const Garcom = () => {
               ) : (
                 <>
                   {itens.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between gap-2">
-                      <span className="text-sm flex-1">{item.nome}</span>
-                      <div className="flex items-center gap-1">
-                        <Button variant="outline" size="icon" className="size-7" onClick={() => updateQty(item.id, -1)}><Minus className="size-3" /></Button>
-                        <span className="w-6 text-center text-sm">{item.quantidade}</span>
-                        <Button variant="outline" size="icon" className="size-7" onClick={() => updateQty(item.id, 1)}><Plus className="size-3" /></Button>
+                    <div key={item.id} className="space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm flex-1">{item.nome}</span>
+                        <div className="flex items-center gap-1">
+                          <Button variant="outline" size="icon" className="size-7" onClick={() => updateQty(item.id, -1)}><Minus className="size-3" /></Button>
+                          <span className="w-6 text-center text-sm">{item.quantidade}</span>
+                          <Button variant="outline" size="icon" className="size-7" onClick={() => updateQty(item.id, 1)}><Plus className="size-3" /></Button>
+                          <Button variant="ghost" size="icon" className="size-7" onClick={() => setObservacaoAberta(observacaoAberta === item.id ? null : item.id)} title="Observação">
+                            <MessageSquare className={`size-3 ${item.observacao ? "text-primary" : ""}`} />
+                          </Button>
+                        </div>
+                        <span className="text-sm w-20 text-right">R$ {(item.preco * item.quantidade).toFixed(2)}</span>
                       </div>
-                      <span className="text-sm w-20 text-right">R$ {(item.preco * item.quantidade).toFixed(2)}</span>
+                      {observacaoAberta === item.id && (
+                        <Textarea
+                          placeholder="Ex: sem cebola, bem passado..."
+                          className="text-xs min-h-[50px]"
+                          value={item.observacao || ""}
+                          onChange={(e) => setItens((prev) => prev.map((i) => i.id === item.id ? { ...i, observacao: e.target.value } : i))}
+                        />
+                      )}
+                      {item.observacao && observacaoAberta !== item.id && (
+                        <p className="text-xs text-muted-foreground italic pl-1">📝 {item.observacao}</p>
+                      )}
                     </div>
                   ))}
                   <div className="border-t pt-3 flex items-center justify-between font-bold text-lg">

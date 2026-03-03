@@ -226,9 +226,14 @@ const Pedidos = () => {
                   <span>{p.hora}</span>
                 </div>
                 {p.itens.map((item) => (
-                  <div key={item.id} className="flex justify-between text-sm">
-                    <span>{item.quantidade}x {item.nome}</span>
-                    <span>R$ {(item.preco * item.quantidade).toFixed(2)}</span>
+                  <div key={item.id}>
+                    <div className="flex justify-between text-sm">
+                      <span>{item.quantidade}x {item.nome}</span>
+                      <span>R$ {(item.preco * item.quantidade).toFixed(2)}</span>
+                    </div>
+                    {item.observacao && (
+                      <p className="text-xs text-muted-foreground italic pl-2">📝 {item.observacao}</p>
+                    )}
                   </div>
                 ))}
                 <div className="text-right text-sm font-semibold">Subtotal: R$ {p.total.toFixed(2)}</div>
