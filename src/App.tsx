@@ -11,6 +11,7 @@ import Bebidas from "./pages/admin/Bebidas";
 import Funcionarios from "./pages/admin/Funcionarios";
 import Mesas from "./pages/admin/Mesas";
 import Pedidos from "./pages/admin/Pedidos";
+import Adicionais from "./pages/admin/Adicionais";
 import Garcom from "./pages/Garcom";
 import Cozinha from "./pages/Cozinha";
 import NotFound from "./pages/NotFound";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="funcionarios" element={<Funcionarios />} />
             <Route path="mesas" element={<Mesas />} />
             <Route path="pedidos" element={<Pedidos />} />
+            <Route path="adicionais" element={<Adicionais />} />
           </Route>
           <Route path="/garcom" element={<Garcom />} />
           <Route path="/cozinha" element={<Cozinha />} />
