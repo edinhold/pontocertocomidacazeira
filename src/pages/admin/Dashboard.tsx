@@ -2,10 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, ShoppingBag, TrendingUp, Users } from "lucide-react";
 
 const stats = [
-  { title: "Vendas Hoje", value: "R$ 1.250,00", icon: DollarSign, change: "+12%" },
-  { title: "Pedidos Hoje", value: "34", icon: ShoppingBag, change: "+5%" },
-  { title: "Vendas Semana", value: "R$ 8.430,00", icon: TrendingUp, change: "+8%" },
-  { title: "Funcionários Ativos", value: "6", icon: Users, change: "" },
+  { title: "Vendas Hoje", value: "R$ 0,00", icon: DollarSign, change: "" },
+  { title: "Pedidos Hoje", value: "0", icon: ShoppingBag, change: "" },
+  { title: "Vendas Semana", value: "R$ 0,00", icon: TrendingUp, change: "" },
+  { title: "Funcionários Ativos", value: "0", icon: Users, change: "" },
 ];
 
 const Dashboard = () => {
