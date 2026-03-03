@@ -25,6 +25,7 @@ const Garcom = () => {
   const [mesaSelecionada, setMesaSelecionada] = useState("");
   const [itens, setItens] = useState<ItemPedido[]>([]);
   const [observacaoAberta, setObservacaoAberta] = useState<string | null>(null);
+  const [observacaoGeral, setObservacaoGeral] = useState("");
 
   const addItem = (item: typeof cardapio[0]) => {
     setItens((prev) => {
@@ -53,12 +54,14 @@ const Garcom = () => {
       status: "pendente" as const,
       hora: agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
       criadoEm: agora.toISOString(),
+      observacaoGeral: observacaoGeral.trim() || undefined,
     };
 
     adicionarPedido(pedido);
     toast.success(`Pedido enviado para a cozinha! Mesa ${mesaSelecionada}`);
     setItens([]);
     setMesaSelecionada("");
+    setObservacaoGeral("");
   };
 
   return (
@@ -140,9 +143,20 @@ const Garcom = () => {
                       )}
                     </div>
                   ))}
-                  <div className="border-t pt-3 flex items-center justify-between font-bold text-lg">
-                    <span>Total</span>
-                    <span>R$ {total.toFixed(2)}</span>
+                  <div className="border-t pt-3 space-y-3">
+                    <div>
+                      <label className="text-sm font-medium">Observação geral do pedido</label>
+                      <Textarea
+                        placeholder="Ex: cliente com alergia a glúten, mesa de aniversário..."
+                        className="text-xs min-h-[50px] mt-1"
+                        value={observacaoGeral}
+                        onChange={(e) => setObservacaoGeral(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between font-bold text-lg">
+                      <span>Total</span>
+                      <span>R$ {total.toFixed(2)}</span>
+                    </div>
                   </div>
                   <Button className="w-full" onClick={enviarPedido}>
                     <Send className="size-4 mr-2" />Enviar Pedido

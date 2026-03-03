@@ -236,6 +236,9 @@ const Pedidos = () => {
                     )}
                   </div>
                 ))}
+                {p.observacaoGeral && (
+                  <p className="text-xs text-muted-foreground italic border-t pt-1 mt-1">📋 Obs. geral: {p.observacaoGeral}</p>
+                )}
                 <div className="text-right text-sm font-semibold">Subtotal: R$ {p.total.toFixed(2)}</div>
               </div>
             ))}

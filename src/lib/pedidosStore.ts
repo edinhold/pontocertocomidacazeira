@@ -14,6 +14,7 @@ export interface Pedido {
   status: "pendente" | "preparando" | "pronto";
   hora: string;
   criadoEm: string;
+  observacaoGeral?: string;
 }
 
 const STORAGE_KEY = "pontocerto_pedidos";
