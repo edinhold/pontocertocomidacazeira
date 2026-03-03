@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,30 +7,69 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { getPedidos } from "@/lib/pedidosStore";
 
 interface Mesa {
   id: string;
   numero: number;
   capacidade: number;
-  status: "livre" | "ocupada";
+}
+
+const MESAS_KEY = "pontocerto_mesas";
+
+function getMesasSalvas(): Mesa[] {
+  try {
+    const data = localStorage.getItem(MESAS_KEY);
+    if (data) return JSON.parse(data);
+  } catch {}
+  return [
+    { id: "1", numero: 1, capacidade: 4 },
+    { id: "2", numero: 2, capacidade: 6 },
+    { id: "3", numero: 3, capacidade: 2 },
+    { id: "4", numero: 4, capacidade: 4 },
+  ];
+}
+
+function salvarMesas(mesas: Mesa[]) {
+  localStorage.setItem(MESAS_KEY, JSON.stringify(mesas));
 }
 
 const Mesas = () => {
-  const [mesas, setMesas] = useState<Mesa[]>([
-    { id: "1", numero: 1, capacidade: 4, status: "livre" },
-    { id: "2", numero: 2, capacidade: 6, status: "ocupada" },
-    { id: "3", numero: 3, capacidade: 2, status: "livre" },
-    { id: "4", numero: 4, capacidade: 4, status: "livre" },
-  ]);
+  const [mesas, setMesas] = useState<Mesa[]>(getMesasSalvas());
+  const [mesasOcupadas, setMesasOcupadas] = useState<Set<number>>(new Set());
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ numero: "", capacidade: "" });
 
+  const atualizarOcupacao = useCallback(() => {
+    const pedidos = getPedidos();
+    const ocupadas = new Set(pedidos.map((p) => p.mesa));
+    setMesasOcupadas(ocupadas);
+  }, []);
+
+  useEffect(() => {
+    atualizarOcupacao();
+    const interval = setInterval(atualizarOcupacao, 2000);
+    window.addEventListener("pedidos-updated", atualizarOcupacao);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("pedidos-updated", atualizarOcupacao);
+    };
+  }, [atualizarOcupacao]);
+
   const handleSave = () => {
     if (!form.numero || !form.capacidade) { toast.error("Preencha todos os campos"); return; }
-    setMesas((prev) => [...prev, { id: Date.now().toString(), numero: parseInt(form.numero), capacidade: parseInt(form.capacidade), status: "livre" }]);
+    const novasMesas = [...mesas, { id: Date.now().toString(), numero: parseInt(form.numero), capacidade: parseInt(form.capacidade) }];
+    setMesas(novasMesas);
+    salvarMesas(novasMesas);
     toast.success("Mesa adicionada!");
     setOpen(false);
     setForm({ numero: "", capacidade: "" });
+  };
+
+  const handleExcluir = (id: string) => {
+    const novasMesas = mesas.filter((m) => m.id !== id);
+    setMesas(novasMesas);
+    salvarMesas(novasMesas);
   };
 
   return (
@@ -52,22 +91,25 @@ const Mesas = () => {
         </Dialog>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {mesas.map((mesa) => (
-          <Card key={mesa.id} className={mesa.status === "ocupada" ? "border-primary/50" : ""}>
-            <CardContent className="p-4 text-center space-y-2">
-              <div className="text-3xl font-bold">{mesa.numero}</div>
-              <p className="text-sm text-muted-foreground">{mesa.capacidade} pessoas</p>
-              <Badge variant={mesa.status === "livre" ? "secondary" : "default"}>
-                {mesa.status === "livre" ? "Livre" : "Ocupada"}
-              </Badge>
-              <div className="pt-2">
-                <Button variant="ghost" size="icon" onClick={() => setMesas((prev) => prev.filter((m) => m.id !== mesa.id))}>
-                  <Trash2 className="size-4 text-destructive" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {mesas.map((mesa) => {
+          const ocupada = mesasOcupadas.has(mesa.numero);
+          return (
+            <Card key={mesa.id} className={ocupada ? "border-primary/50" : ""}>
+              <CardContent className="p-4 text-center space-y-2">
+                <div className="text-3xl font-bold">{mesa.numero}</div>
+                <p className="text-sm text-muted-foreground">{mesa.capacidade} pessoas</p>
+                <Badge variant={ocupada ? "default" : "secondary"}>
+                  {ocupada ? "Ocupada" : "Livre"}
+                </Badge>
+                <div className="pt-2">
+                  <Button variant="ghost" size="icon" onClick={() => handleExcluir(mesa.id)}>
+                    <Trash2 className="size-4 text-destructive" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
