@@ -5,30 +5,75 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { autenticar, getCargoRoute } from "@/lib/funcionariosStore";
+import { cadastrarCliente, autenticarCliente } from "@/lib/clientesStore";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+
+  const [regNome, setRegNome] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regPassword, setRegPassword] = useState("");
+  const [regConfirm, setRegConfirm] = useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    if (!loginEmail || !loginPassword) {
       toast.error("Preencha todos os campos");
       return;
     }
 
-    const funcionario = autenticar(email, password);
-    if (!funcionario) {
-      toast.error("Email ou senha inválidos");
+    // Tenta autenticar como funcionário
+    const funcionario = autenticar(loginEmail, loginPassword);
+    if (funcionario) {
+      localStorage.setItem("pontocerto_user", JSON.stringify({ id: funcionario.id, nome: funcionario.nome, cargo: funcionario.cargo }));
+      navigate(getCargoRoute(funcionario.cargo));
+      toast.success(`Bem-vindo(a), ${funcionario.nome}!`);
       return;
     }
 
-    localStorage.setItem("pontocerto_user", JSON.stringify({ id: funcionario.id, nome: funcionario.nome, cargo: funcionario.cargo }));
-    navigate(getCargoRoute(funcionario.cargo));
-    toast.success(`Bem-vindo(a), ${funcionario.nome}!`);
+    // Tenta autenticar como cliente
+    const cliente = autenticarCliente(loginEmail, loginPassword);
+    if (cliente) {
+      localStorage.setItem("pontocerto_user", JSON.stringify({ id: cliente.id, nome: cliente.nome, tipo: "cliente" }));
+      navigate("/cardapio");
+      toast.success(`Bem-vindo(a), ${cliente.nome}!`);
+      return;
+    }
+
+    toast.error("Email ou senha inválidos");
+  };
+
+  const handleCadastro = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regNome || !regEmail || !regPassword || !regConfirm) {
+      toast.error("Preencha todos os campos");
+      return;
+    }
+    if (regPassword.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+    if (regPassword !== regConfirm) {
+      toast.error("As senhas não coincidem");
+      return;
+    }
+
+    const result = cadastrarCliente(regNome, regEmail, regPassword);
+    if (!result.success) {
+      toast.error(result.message);
+      return;
+    }
+
+    toast.success(result.message);
+    setRegNome("");
+    setRegEmail("");
+    setRegPassword("");
+    setRegConfirm("");
   };
 
   return (
@@ -38,34 +83,57 @@ const Login = () => {
           <img src={logo} alt="Ponto Certo - Comida Caseira" className="w-48 h-auto" />
           <p className="text-sm text-muted-foreground">Sistema de Gestão</p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <Button type="submit" className="w-full">
-              Entrar
-            </Button>
-          </form>
+        <CardContent>
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Entrar</TabsTrigger>
+              <TabsTrigger value="cadastro">Cadastro</TabsTrigger>
+            </TabsList>
 
-          <div className="relative">
+            <TabsContent value="login" className="space-y-4 pt-4">
+              <p className="text-sm text-muted-foreground text-center">
+                Acesse com seu e-mail e senha cadastrados.
+              </p>
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email">Email</Label>
+                  <Input id="login-email" type="email" placeholder="seu@email.com" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">Senha</Label>
+                  <Input id="login-password" type="password" placeholder="••••••••" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} />
+                </div>
+                <Button type="submit" className="w-full">Entrar</Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="cadastro" className="space-y-4 pt-4">
+              <p className="text-sm text-muted-foreground text-center">
+                Crie sua conta para acessar o cardápio e acompanhar seus pedidos.
+              </p>
+              <form onSubmit={handleCadastro} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reg-nome">Nome completo</Label>
+                  <Input id="reg-nome" placeholder="Seu nome" value={regNome} onChange={(e) => setRegNome(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reg-email">Email</Label>
+                  <Input id="reg-email" type="email" placeholder="seu@email.com" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reg-password">Senha</Label>
+                  <Input id="reg-password" type="password" placeholder="Mínimo 6 caracteres" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reg-confirm">Confirmar senha</Label>
+                  <Input id="reg-confirm" type="password" placeholder="Repita a senha" value={regConfirm} onChange={(e) => setRegConfirm(e.target.value)} />
+                </div>
+                <Button type="submit" className="w-full">Criar conta</Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+
+          <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
