@@ -124,8 +124,11 @@ const Cardapio = () => {
             </CardHeader>
             <CardContent className="space-y-2">
               {pratos.filter((p) => p.categoria === cat).map((prato) => (
-                <div key={prato.id} className="flex items-center justify-between border rounded-lg p-3">
-                  <div className="flex-1">
+                <div key={prato.id} className="flex items-center justify-between border rounded-lg p-3 gap-3">
+                  {prato.imagem && (
+                    <img src={prato.imagem} alt={prato.nome} className="size-16 rounded-lg object-cover shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm">{prato.nome}</p>
                     {prato.descricao && <p className="text-xs text-muted-foreground">{prato.descricao}</p>}
                     <p className="text-sm font-semibold text-primary mt-1">R$ {prato.preco.toFixed(2)}</p>
