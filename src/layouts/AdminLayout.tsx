@@ -22,6 +22,7 @@ import {
   LogOut,
   CirclePlus,
   Settings,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
