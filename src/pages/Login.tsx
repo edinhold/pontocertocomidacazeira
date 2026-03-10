@@ -74,6 +74,11 @@ const Login = () => {
               Entrar
             </Button>
           </form>
+          <div className="mt-4 text-center">
+            <Link to="/cardapio" className="text-sm text-primary hover:underline">
+              📋 Acessar Cardápio Digital
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
