@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,34 +9,47 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-
-interface Funcionario {
-  id: string;
-  nome: string;
-  email: string;
-  cargo: string;
-}
+import { getFuncionarios, salvarFuncionarios, type Funcionario } from "@/lib/funcionariosStore";
 
 const Funcionarios = () => {
-  const [funcionarios, setFuncionarios] = useState<Funcionario[]>([
-    { id: "1", nome: "Maria Silva", email: "maria@email.com", cargo: "Cozinheiro(a)" },
-    { id: "2", nome: "João Santos", email: "joao@email.com", cargo: "Garçom" },
-  ]);
+  const [funcionarios, setFuncionarios] = useState<Funcionario[]>(getFuncionarios());
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ nome: "", email: "", cargo: "", senha: "" });
+  const [form, setForm] = useState({ nome: "", email: "", cargo: "" as string, senha: "" });
+
+  useEffect(() => {
+    salvarFuncionarios(funcionarios);
+  }, [funcionarios]);
 
   const resetForm = () => { setForm({ nome: "", email: "", cargo: "", senha: "" }); setEditingId(null); };
 
   const handleSave = () => {
     if (!form.nome || !form.email || !form.cargo) { toast.error("Preencha os campos obrigatórios"); return; }
-    if (!editingId && !form.senha) { toast.error("Defina uma senha"); return; }
+    if (!editingId && !form.senha) { toast.error("Defina uma senha para o funcionário"); return; }
+
+    // Check duplicate email
+    const duplicado = funcionarios.find((f) => f.email === form.email && f.id !== editingId);
+    if (duplicado) { toast.error("Já existe um funcionário com este email"); return; }
+
     if (editingId) {
-      setFuncionarios((prev) => prev.map((f) => (f.id === editingId ? { ...f, nome: form.nome, email: form.email, cargo: form.cargo } : f)));
+      setFuncionarios((prev) =>
+        prev.map((f) =>
+          f.id === editingId
+            ? { ...f, nome: form.nome, email: form.email, cargo: form.cargo as Funcionario["cargo"], ...(form.senha ? { senha: form.senha } : {}) }
+            : f
+        )
+      );
       toast.success("Funcionário atualizado!");
     } else {
-      setFuncionarios((prev) => [...prev, { id: Date.now().toString(), nome: form.nome, email: form.email, cargo: form.cargo }]);
-      toast.success("Funcionário adicionado!");
+      const novo: Funcionario = {
+        id: Date.now().toString(),
+        nome: form.nome,
+        email: form.email,
+        cargo: form.cargo as Funcionario["cargo"],
+        senha: form.senha,
+      };
+      setFuncionarios((prev) => [...prev, novo]);
+      toast.success("Funcionário cadastrado!");
     }
     setOpen(false);
     resetForm();
@@ -46,6 +59,11 @@ const Funcionarios = () => {
     setForm({ nome: f.nome, email: f.email, cargo: f.cargo, senha: "" });
     setEditingId(f.id);
     setOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    setFuncionarios((prev) => prev.filter((x) => x.id !== id));
+    toast.success("Funcionário removido!");
   };
 
   return (
@@ -72,9 +90,10 @@ const Funcionarios = () => {
                   </SelectContent>
                 </Select>
               </div>
-              {!editingId && (
-                <div className="space-y-2"><Label>Senha *</Label><Input type="password" value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} /></div>
-              )}
+              <div className="space-y-2">
+                <Label>{editingId ? "Nova Senha (deixe vazio para manter)" : "Senha *"}</Label>
+                <Input type="password" value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} />
+              </div>
               <Button onClick={handleSave} className="w-full">Salvar</Button>
             </div>
           </DialogContent>
@@ -107,11 +126,11 @@ const Funcionarios = () => {
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>Excluir funcionário?</AlertDialogTitle>
-                            <AlertDialogDescription>Tem certeza que deseja excluir "{f.nome}"? Esta ação não pode ser desfeita.</AlertDialogDescription>
+                            <AlertDialogDescription>Tem certeza que deseja excluir "{f.nome}"?</AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => { setFuncionarios((prev) => prev.filter((x) => x.id !== f.id)); toast.success("Funcionário removido!"); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+                            <AlertDialogAction onClick={() => handleDelete(f.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>

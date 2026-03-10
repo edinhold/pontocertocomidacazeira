@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
+import { autenticar, getCargoRoute } from "@/lib/funcionariosStore";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,9 +19,16 @@ const Login = () => {
       toast.error("Preencha todos os campos");
       return;
     }
-    // Temporary mock login - will be replaced with Lovable Cloud auth
-    navigate("/admin");
-    toast.success("Login realizado com sucesso!");
+
+    const funcionario = autenticar(email, password);
+    if (!funcionario) {
+      toast.error("Email ou senha inválidos");
+      return;
+    }
+
+    localStorage.setItem("pontocerto_user", JSON.stringify({ id: funcionario.id, nome: funcionario.nome, cargo: funcionario.cargo }));
+    navigate(getCargoRoute(funcionario.cargo));
+    toast.success(`Bem-vindo(a), ${funcionario.nome}!`);
   };
 
   return (
