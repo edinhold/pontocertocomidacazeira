@@ -42,6 +42,7 @@ const App = () => (
           <Route path="/garcom" element={<Garcom />} />
           <Route path="/cozinha" element={<Cozinha />} />
           <Route path="/cardapio" element={<Cardapio />} />
+          <Route path="/instalar" element={<Instalar />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
