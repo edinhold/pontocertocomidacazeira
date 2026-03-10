@@ -9,21 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-
-interface Bebida {
-  id: string;
-  nome: string;
-  preco: number;
-  categoria: string;
-}
+import { getBebidas, salvarBebidas, type Bebida } from "@/lib/bebidasStore";
 
 const categorias = ["Refrigerante", "Suco", "Cerveja", "Água", "Drink", "Vinho"];
 
 const Bebidas = () => {
-  const [bebidas, setBebidas] = useState<Bebida[]>([
-    { id: "1", nome: "Coca-Cola 350ml", preco: 6.0, categoria: "Refrigerante" },
-    { id: "2", nome: "Suco de Laranja", preco: 8.0, categoria: "Suco" },
-  ]);
+  const [bebidas, setBebidas] = useState<Bebida[]>(getBebidas());
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ nome: "", preco: "", categoria: "" });
@@ -32,13 +23,16 @@ const Bebidas = () => {
 
   const handleSave = () => {
     if (!form.nome || !form.preco || !form.categoria) { toast.error("Preencha todos os campos"); return; }
+    let updated: Bebida[];
     if (editingId) {
-      setBebidas((prev) => prev.map((b) => (b.id === editingId ? { ...b, ...form, preco: parseFloat(form.preco) } : b)));
+      updated = bebidas.map((b) => (b.id === editingId ? { ...b, ...form, preco: parseFloat(form.preco) } : b));
       toast.success("Bebida atualizada!");
     } else {
-      setBebidas((prev) => [...prev, { id: Date.now().toString(), ...form, preco: parseFloat(form.preco) }]);
+      updated = [...bebidas, { id: Date.now().toString(), ...form, preco: parseFloat(form.preco) }];
       toast.success("Bebida adicionada!");
     }
+    setBebidas(updated);
+    salvarBebidas(updated);
     setOpen(false);
     resetForm();
   };
@@ -47,6 +41,13 @@ const Bebidas = () => {
     setForm({ nome: bebida.nome, preco: bebida.preco.toString(), categoria: bebida.categoria });
     setEditingId(bebida.id);
     setOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    const updated = bebidas.filter((b) => b.id !== id);
+    setBebidas(updated);
+    salvarBebidas(updated);
+    toast.success("Bebida removida!");
   };
 
   return (
@@ -101,11 +102,11 @@ const Bebidas = () => {
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>Excluir bebida?</AlertDialogTitle>
-                            <AlertDialogDescription>Tem certeza que deseja excluir "{b.nome}"? Esta ação não pode ser desfeita.</AlertDialogDescription>
+                            <AlertDialogDescription>Tem certeza que deseja excluir "{b.nome}"?</AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => { setBebidas((prev) => prev.filter((x) => x.id !== b.id)); toast.success("Bebida removida!"); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+                            <AlertDialogAction onClick={() => handleDelete(b.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
