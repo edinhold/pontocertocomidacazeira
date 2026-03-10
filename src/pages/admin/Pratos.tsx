@@ -10,23 +10,12 @@ import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-
-interface Prato {
-  id: string;
-  nome: string;
-  descricao: string;
-  preco: number;
-  categoria: string;
-  disponivel: boolean;
-}
+import { getPratos, salvarPratos, type Prato } from "@/lib/pratosStore";
 
 const categorias = ["Entrada", "Prato Principal", "Sobremesa", "Acompanhamento"];
 
 const Pratos = () => {
-  const [pratos, setPratos] = useState<Prato[]>([
-    { id: "1", nome: "Feijoada Completa", descricao: "Feijoada com todos os acompanhamentos", preco: 35.0, categoria: "Prato Principal", disponivel: true },
-    { id: "2", nome: "Frango à Parmegiana", descricao: "Filé de frango empanado com queijo e molho", preco: 28.0, categoria: "Prato Principal", disponivel: true },
-  ]);
+  const [pratos, setPratos] = useState<Prato[]>(getPratos());
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ nome: "", descricao: "", preco: "", categoria: "", disponivel: true });
@@ -41,13 +30,16 @@ const Pratos = () => {
       toast.error("Preencha os campos obrigatórios");
       return;
     }
+    let updated: Prato[];
     if (editingId) {
-      setPratos((prev) => prev.map((p) => (p.id === editingId ? { ...p, ...form, preco: parseFloat(form.preco) } : p)));
+      updated = pratos.map((p) => (p.id === editingId ? { ...p, ...form, preco: parseFloat(form.preco) } : p));
       toast.success("Prato atualizado!");
     } else {
-      setPratos((prev) => [...prev, { id: Date.now().toString(), ...form, preco: parseFloat(form.preco) }]);
+      updated = [...pratos, { id: Date.now().toString(), ...form, preco: parseFloat(form.preco) }];
       toast.success("Prato adicionado!");
     }
+    setPratos(updated);
+    salvarPratos(updated);
     setOpen(false);
     resetForm();
   };
@@ -59,7 +51,9 @@ const Pratos = () => {
   };
 
   const handleDelete = (id: string) => {
-    setPratos((prev) => prev.filter((p) => p.id !== id));
+    const updated = pratos.filter((p) => p.id !== id);
+    setPratos(updated);
+    salvarPratos(updated);
     toast.success("Prato removido!");
   };
 
@@ -139,7 +133,7 @@ const Pratos = () => {
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>Excluir prato?</AlertDialogTitle>
-                            <AlertDialogDescription>Tem certeza que deseja excluir "{prato.nome}"? Esta ação não pode ser desfeita.</AlertDialogDescription>
+                            <AlertDialogDescription>Tem certeza que deseja excluir "{prato.nome}"?</AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>

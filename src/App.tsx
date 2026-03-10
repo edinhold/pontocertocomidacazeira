@@ -12,8 +12,10 @@ import Funcionarios from "./pages/admin/Funcionarios";
 import Mesas from "./pages/admin/Mesas";
 import Pedidos from "./pages/admin/Pedidos";
 import Adicionais from "./pages/admin/Adicionais";
+import Configuracoes from "./pages/admin/Configuracoes";
 import Garcom from "./pages/Garcom";
 import Cozinha from "./pages/Cozinha";
+import Cardapio from "./pages/Cardapio";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,9 +36,11 @@ const App = () => (
             <Route path="mesas" element={<Mesas />} />
             <Route path="pedidos" element={<Pedidos />} />
             <Route path="adicionais" element={<Adicionais />} />
+            <Route path="configuracoes" element={<Configuracoes />} />
           </Route>
           <Route path="/garcom" element={<Garcom />} />
           <Route path="/cozinha" element={<Cozinha />} />
+          <Route path="/cardapio" element={<Cardapio />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

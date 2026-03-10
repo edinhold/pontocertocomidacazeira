@@ -21,6 +21,7 @@ import {
   ClipboardList,
   LogOut,
   CirclePlus,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -32,6 +33,7 @@ const menuItems = [
   { title: "Mesas", icon: Grid3X3, path: "/admin/mesas" },
   { title: "Pedidos", icon: ClipboardList, path: "/admin/pedidos" },
   { title: "Adicionais", icon: CirclePlus, path: "/admin/adicionais" },
+  { title: "Configurações", icon: Settings, path: "/admin/configuracoes" },
 ];
 
 const AdminLayout = () => {
