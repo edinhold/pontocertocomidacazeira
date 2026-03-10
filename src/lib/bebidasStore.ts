@@ -3,6 +3,7 @@ export interface Bebida {
   nome: string;
   preco: number;
   categoria: string;
+  imagem?: string;
 }
 
 const STORAGE_KEY = "pontocerto_bebidas";

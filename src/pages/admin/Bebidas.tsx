@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { getBebidas, salvarBebidas, type Bebida } from "@/lib/bebidasStore";
+import ImageUpload from "@/components/ImageUpload";
 
 const categorias = ["Refrigerante", "Suco", "Cerveja", "Água", "Drink", "Vinho"];
 
@@ -17,18 +18,18 @@ const Bebidas = () => {
   const [bebidas, setBebidas] = useState<Bebida[]>(getBebidas());
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ nome: "", preco: "", categoria: "" });
+  const [form, setForm] = useState({ nome: "", preco: "", categoria: "", imagem: undefined as string | undefined });
 
-  const resetForm = () => { setForm({ nome: "", preco: "", categoria: "" }); setEditingId(null); };
+  const resetForm = () => { setForm({ nome: "", preco: "", categoria: "", imagem: undefined }); setEditingId(null); };
 
   const handleSave = () => {
     if (!form.nome || !form.preco || !form.categoria) { toast.error("Preencha todos os campos"); return; }
     let updated: Bebida[];
     if (editingId) {
-      updated = bebidas.map((b) => (b.id === editingId ? { ...b, ...form, preco: parseFloat(form.preco) } : b));
+      updated = bebidas.map((b) => (b.id === editingId ? { ...b, nome: form.nome, preco: parseFloat(form.preco), categoria: form.categoria, imagem: form.imagem } : b));
       toast.success("Bebida atualizada!");
     } else {
-      updated = [...bebidas, { id: Date.now().toString(), ...form, preco: parseFloat(form.preco) }];
+      updated = [...bebidas, { id: Date.now().toString(), nome: form.nome, preco: parseFloat(form.preco), categoria: form.categoria, imagem: form.imagem }];
       toast.success("Bebida adicionada!");
     }
     setBebidas(updated);
@@ -38,7 +39,7 @@ const Bebidas = () => {
   };
 
   const handleEdit = (bebida: Bebida) => {
-    setForm({ nome: bebida.nome, preco: bebida.preco.toString(), categoria: bebida.categoria });
+    setForm({ nome: bebida.nome, preco: bebida.preco.toString(), categoria: bebida.categoria, imagem: bebida.imagem });
     setEditingId(bebida.id);
     setOpen(true);
   };
@@ -61,6 +62,7 @@ const Bebidas = () => {
           <DialogContent>
             <DialogHeader><DialogTitle>{editingId ? "Editar Bebida" : "Nova Bebida"}</DialogTitle></DialogHeader>
             <div className="space-y-4">
+              <ImageUpload value={form.imagem} onChange={(v) => setForm({ ...form, imagem: v })} label="Foto da Bebida" />
               <div className="space-y-2"><Label>Nome *</Label><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></div>
               <div className="space-y-2"><Label>Preço (R$) *</Label><Input type="number" step="0.01" value={form.preco} onChange={(e) => setForm({ ...form, preco: e.target.value })} /></div>
               <div className="space-y-2">
@@ -80,6 +82,7 @@ const Bebidas = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-16">Foto</TableHead>
                 <TableHead>Nome</TableHead>
                 <TableHead>Categoria</TableHead>
                 <TableHead>Preço</TableHead>
@@ -89,6 +92,13 @@ const Bebidas = () => {
             <TableBody>
               {bebidas.map((b) => (
                 <TableRow key={b.id}>
+                  <TableCell>
+                    {b.imagem ? (
+                      <img src={b.imagem} alt={b.nome} className="size-10 rounded object-cover" />
+                    ) : (
+                      <div className="size-10 rounded bg-muted flex items-center justify-center text-muted-foreground text-xs">—</div>
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">{b.nome}</TableCell>
                   <TableCell>{b.categoria}</TableCell>
                   <TableCell>R$ {b.preco.toFixed(2)}</TableCell>

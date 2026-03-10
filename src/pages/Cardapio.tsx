@@ -124,8 +124,11 @@ const Cardapio = () => {
             </CardHeader>
             <CardContent className="space-y-2">
               {pratos.filter((p) => p.categoria === cat).map((prato) => (
-                <div key={prato.id} className="flex items-center justify-between border rounded-lg p-3">
-                  <div className="flex-1">
+                <div key={prato.id} className="flex items-center justify-between border rounded-lg p-3 gap-3">
+                  {prato.imagem && (
+                    <img src={prato.imagem} alt={prato.nome} className="size-16 rounded-lg object-cover shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm">{prato.nome}</p>
                     {prato.descricao && <p className="text-xs text-muted-foreground">{prato.descricao}</p>}
                     <p className="text-sm font-semibold text-primary mt-1">R$ {prato.preco.toFixed(2)}</p>
@@ -150,8 +153,11 @@ const Cardapio = () => {
             </CardHeader>
             <CardContent className="space-y-2">
               {bebidas.map((bebida) => (
-                <div key={bebida.id} className="flex items-center justify-between border rounded-lg p-3">
-                  <div className="flex-1">
+                <div key={bebida.id} className="flex items-center justify-between border rounded-lg p-3 gap-3">
+                  {bebida.imagem && (
+                    <img src={bebida.imagem} alt={bebida.nome} className="size-16 rounded-lg object-cover shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm">{bebida.nome}</p>
                     <p className="text-xs text-muted-foreground">{bebida.categoria}</p>
                     <p className="text-sm font-semibold text-primary mt-1">R$ {bebida.preco.toFixed(2)}</p>

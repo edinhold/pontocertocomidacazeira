@@ -5,6 +5,7 @@ export interface Prato {
   preco: number;
   categoria: string;
   disponivel: boolean;
+  imagem?: string;
 }
 
 const STORAGE_KEY = "pontocerto_pratos";

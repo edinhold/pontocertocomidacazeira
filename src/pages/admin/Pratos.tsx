@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { getPratos, salvarPratos, type Prato } from "@/lib/pratosStore";
+import ImageUpload from "@/components/ImageUpload";
 
 const categorias = ["Entrada", "Prato Principal", "Sobremesa", "Acompanhamento"];
 
@@ -18,10 +19,10 @@ const Pratos = () => {
   const [pratos, setPratos] = useState<Prato[]>(getPratos());
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ nome: "", descricao: "", preco: "", categoria: "", disponivel: true });
+  const [form, setForm] = useState({ nome: "", descricao: "", preco: "", categoria: "", disponivel: true, imagem: undefined as string | undefined });
 
   const resetForm = () => {
-    setForm({ nome: "", descricao: "", preco: "", categoria: "", disponivel: true });
+    setForm({ nome: "", descricao: "", preco: "", categoria: "", disponivel: true, imagem: undefined });
     setEditingId(null);
   };
 
@@ -32,10 +33,10 @@ const Pratos = () => {
     }
     let updated: Prato[];
     if (editingId) {
-      updated = pratos.map((p) => (p.id === editingId ? { ...p, ...form, preco: parseFloat(form.preco) } : p));
+      updated = pratos.map((p) => (p.id === editingId ? { ...p, nome: form.nome, descricao: form.descricao, preco: parseFloat(form.preco), categoria: form.categoria, disponivel: form.disponivel, imagem: form.imagem } : p));
       toast.success("Prato atualizado!");
     } else {
-      updated = [...pratos, { id: Date.now().toString(), ...form, preco: parseFloat(form.preco) }];
+      updated = [...pratos, { id: Date.now().toString(), nome: form.nome, descricao: form.descricao, preco: parseFloat(form.preco), categoria: form.categoria, disponivel: form.disponivel, imagem: form.imagem }];
       toast.success("Prato adicionado!");
     }
     setPratos(updated);
@@ -45,7 +46,7 @@ const Pratos = () => {
   };
 
   const handleEdit = (prato: Prato) => {
-    setForm({ nome: prato.nome, descricao: prato.descricao, preco: prato.preco.toString(), categoria: prato.categoria, disponivel: prato.disponivel });
+    setForm({ nome: prato.nome, descricao: prato.descricao, preco: prato.preco.toString(), categoria: prato.categoria, disponivel: prato.disponivel, imagem: prato.imagem });
     setEditingId(prato.id);
     setOpen(true);
   };
@@ -70,6 +71,7 @@ const Pratos = () => {
               <DialogTitle>{editingId ? "Editar Prato" : "Novo Prato"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
+              <ImageUpload value={form.imagem} onChange={(v) => setForm({ ...form, imagem: v })} label="Foto do Prato" />
               <div className="space-y-2">
                 <Label>Nome *</Label>
                 <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
@@ -105,6 +107,7 @@ const Pratos = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-16">Foto</TableHead>
                 <TableHead>Nome</TableHead>
                 <TableHead>Categoria</TableHead>
                 <TableHead>Preço</TableHead>
@@ -115,6 +118,13 @@ const Pratos = () => {
             <TableBody>
               {pratos.map((prato) => (
                 <TableRow key={prato.id}>
+                  <TableCell>
+                    {prato.imagem ? (
+                      <img src={prato.imagem} alt={prato.nome} className="size-10 rounded object-cover" />
+                    ) : (
+                      <div className="size-10 rounded bg-muted flex items-center justify-center text-muted-foreground text-xs">—</div>
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">{prato.nome}</TableCell>
                   <TableCell>{prato.categoria}</TableCell>
                   <TableCell>R$ {prato.preco.toFixed(2)}</TableCell>
