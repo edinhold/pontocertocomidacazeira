@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -73,6 +74,11 @@ const Login = () => {
               Entrar
             </Button>
           </form>
+          <div className="mt-4 text-center">
+            <Link to="/cardapio" className="text-sm text-primary hover:underline">
+              📋 Acessar Cardápio Digital
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
