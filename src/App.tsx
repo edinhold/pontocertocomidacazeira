@@ -16,6 +16,7 @@ import Configuracoes from "./pages/admin/Configuracoes";
 import Garcom from "./pages/Garcom";
 import Cozinha from "./pages/Cozinha";
 import Cardapio from "./pages/Cardapio";
+import Instalar from "./pages/Instalar";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
