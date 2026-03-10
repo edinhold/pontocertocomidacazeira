@@ -16,6 +16,7 @@ import Configuracoes from "./pages/admin/Configuracoes";
 import Garcom from "./pages/Garcom";
 import Cozinha from "./pages/Cozinha";
 import Cardapio from "./pages/Cardapio";
+import Instalar from "./pages/Instalar";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/garcom" element={<Garcom />} />
           <Route path="/cozinha" element={<Cozinha />} />
           <Route path="/cardapio" element={<Cardapio />} />
+          <Route path="/instalar" element={<Instalar />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
