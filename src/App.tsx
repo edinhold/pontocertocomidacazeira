@@ -39,6 +39,7 @@ const App = () => (
             <Route path="pedidos" element={<Pedidos />} />
             <Route path="adicionais" element={<Adicionais />} />
             <Route path="configuracoes" element={<Configuracoes />} />
+            <Route path="mensagens" element={<MensagensProgramadas />} />
           </Route>
           <Route path="/garcom" element={<Garcom />} />
           <Route path="/cozinha" element={<Cozinha />} />

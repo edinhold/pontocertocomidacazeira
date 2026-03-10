@@ -35,6 +35,7 @@ const menuItems = [
   { title: "Pedidos", icon: ClipboardList, path: "/admin/pedidos" },
   { title: "Adicionais", icon: CirclePlus, path: "/admin/adicionais" },
   { title: "Configurações", icon: Settings, path: "/admin/configuracoes" },
+  { title: "Mensagens", icon: MessageSquare, path: "/admin/mensagens" },
 ];
 
 const AdminLayout = () => {
