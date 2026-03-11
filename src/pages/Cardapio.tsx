@@ -55,10 +55,7 @@ const Cardapio = () => {
   const total = subtotal + taxaEntrega;
 
   const enviarWhatsApp = () => {
-    // Ler config fresca no momento do envio
-    const configAtual = getConfig();
-    
-    if (!configAtual.whatsapp) {
+    if (!config.whatsapp) {
       toast.error("Restaurante ainda não configurou o WhatsApp. Tente novamente mais tarde.");
       return;
     }
