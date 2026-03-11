@@ -133,7 +133,7 @@ const Pedidos = () => {
             return (
               <Card key={mesa} className="cursor-pointer hover:border-primary transition-colors" onClick={() => setMesaAberta(mesa)}>
                 <CardContent className="p-4 text-center">
-                  <p className="text-lg font-bold">Mesa {mesa}</p>
+                  <p className="text-lg font-bold">{mesa === 0 ? "📱 WhatsApp" : `Mesa ${mesa}`}</p>
                   <p className="text-sm text-muted-foreground">{pedidosMesa.length} pedido(s)</p>
                   <p className="text-base font-semibold mt-1">R$ {totalMesaCard.toFixed(2)}</p>
                 </CardContent>
@@ -169,7 +169,7 @@ const Pedidos = () => {
                 {pedidos.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.id}</TableCell>
-                    <TableCell>Mesa {p.mesa}</TableCell>
+                    <TableCell>{p.mesa === 0 ? "📱 WhatsApp" : `Mesa ${p.mesa}`}</TableCell>
                     <TableCell className="max-w-[200px] truncate">
                       {p.itens.map((i) => `${i.quantidade}x ${i.nome}`).join(", ")}
                     </TableCell>
@@ -216,7 +216,7 @@ const Pedidos = () => {
       <Dialog open={mesaAberta !== null} onOpenChange={(open) => !open && setMesaAberta(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Mesa {mesaAberta} — Conta</DialogTitle>
+            <DialogTitle>{mesaAberta === 0 ? "📱 WhatsApp" : `Mesa ${mesaAberta}`} — Conta</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 max-h-[400px] overflow-y-auto">
             {pedidosDaMesa.map((p) => (

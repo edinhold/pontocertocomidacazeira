@@ -10,6 +10,7 @@ import { getPratos, type Prato } from "@/lib/pratosStore";
 import { getBebidas, type Bebida } from "@/lib/bebidasStore";
 import { getAdicionais, type Adicional } from "@/lib/adicionaisStore";
 import { registrarVenda } from "@/lib/vendasStore";
+import { adicionarPedido } from "@/lib/pedidosStore";
 import { useConfig } from "@/hooks/useConfig";
 import Logo from "@/components/Logo";
 
@@ -101,7 +102,7 @@ const Cardapio = () => {
     // Registrar como venda do dia
     registrarVenda({
       id: crypto.randomUUID(),
-      mesa: 0, // 0 = pedido via WhatsApp/delivery
+      mesa: 0,
       itens: carrinho.map((i) => ({
         nome: i.nome,
         preco: i.preco,
@@ -110,6 +111,25 @@ const Cardapio = () => {
       total,
       fechadoEm: new Date().toISOString(),
       observacaoGeral: `WhatsApp - ${nome}${tipoEntrega === "entrega" ? ` | ${endereco}` : " | Retirada"}`,
+    });
+
+    // Registrar como pedido para aparecer no painel de pedidos
+    const pedidoId = `WA${Date.now()}`;
+    const agora = new Date();
+    adicionarPedido({
+      id: pedidoId,
+      mesa: 0,
+      itens: carrinho.map((i) => ({
+        id: crypto.randomUUID(),
+        nome: i.nome,
+        preco: i.preco,
+        quantidade: i.quantidade,
+      })),
+      total,
+      status: "pendente",
+      hora: agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      criadoEm: agora.toISOString(),
+      observacaoGeral: `📱 WhatsApp - ${nome}${tipoEntrega === "entrega" ? ` | Entrega: ${endereco}` : " | Retirada"}`,
     });
 
     // Usar window.location.href como fallback para mobile
