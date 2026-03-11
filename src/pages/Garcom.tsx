@@ -27,6 +27,7 @@ const Garcom = () => {
   const [itens, setItens] = useState<ItemPedido[]>([]);
   const [observacaoAberta, setObservacaoAberta] = useState<string | null>(null);
   const [observacaoGeral, setObservacaoGeral] = useState("");
+  const [enviando, setEnviando] = useState(false);
 
   const addItem = (item: typeof cardapio[0]) => {
     setItens((prev) => {
@@ -42,9 +43,11 @@ const Garcom = () => {
 
   const total = itens.reduce((sum, i) => sum + i.preco * i.quantidade, 0);
 
-  const enviarPedido = () => {
+  const enviarPedido = async () => {
     if (!mesaSelecionada) { toast.error("Selecione uma mesa"); return; }
     if (itens.length === 0) { toast.error("Adicione itens ao pedido"); return; }
+
+    setEnviando(true);
 
     const agora = new Date();
     const pedido = {
@@ -58,7 +61,7 @@ const Garcom = () => {
       observacaoGeral: observacaoGeral.trim() || undefined,
     };
 
-    adicionarPedido(pedido);
+    await adicionarPedido(pedido);
 
     // Enviar notificação via WhatsApp
     const config = getConfig();
@@ -89,6 +92,7 @@ const Garcom = () => {
     setItens([]);
     setMesaSelecionada("");
     setObservacaoGeral("");
+    setEnviando(false);
   };
 
   return (
@@ -185,8 +189,8 @@ const Garcom = () => {
                       <span>R$ {total.toFixed(2)}</span>
                     </div>
                   </div>
-                  <Button className="w-full" onClick={enviarPedido}>
-                    <Send className="size-4 mr-2" />Enviar Pedido
+                  <Button className="w-full" onClick={enviarPedido} disabled={enviando}>
+                    <Send className="size-4 mr-2" />{enviando ? "Enviando..." : "Enviar Pedido"}
                   </Button>
                 </>
               )}

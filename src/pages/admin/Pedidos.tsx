@@ -12,9 +12,10 @@ import {
 import { Trash2, Receipt, Printer } from "lucide-react";
 import { toast } from "sonner";
 import {
-  getPedidos, salvarPedidos, excluirPedido as excluirPedidoStore,
+  getPedidos, excluirPedido as excluirPedidoStore,
   getPedidosPorMesa, fecharMesa, type Pedido,
 } from "@/lib/pedidosStore";
+import { supabase } from "@/integrations/supabase/client";
 
 const statusColors: Record<string, string> = {
   pendente: "bg-warning/10 text-warning",
@@ -23,34 +24,52 @@ const statusColors: Record<string, string> = {
 };
 
 const Pedidos = () => {
-  const [pedidos, setPedidos] = useState<Pedido[]>(getPedidos());
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [mesaAberta, setMesaAberta] = useState<number | null>(null);
+  const [pedidosDaMesa, setPedidosDaMesa] = useState<Pedido[]>([]);
 
-  const recarregar = useCallback(() => setPedidos(getPedidos()), []);
+  const recarregar = useCallback(async () => {
+    const p = await getPedidos();
+    setPedidos(p);
+  }, []);
 
   useEffect(() => {
+    recarregar();
     window.addEventListener("pedidos-updated", recarregar);
-    const interval = setInterval(recarregar, 2000);
+
+    const channel = supabase
+      .channel('admin-pedidos')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, () => recarregar())
+      .subscribe();
+
     return () => {
       window.removeEventListener("pedidos-updated", recarregar);
-      clearInterval(interval);
+      supabase.removeChannel(channel);
     };
   }, [recarregar]);
 
-  const handleExcluir = (id: string) => {
-    excluirPedidoStore(id);
-    recarregar();
+  // Load mesa pedidos when mesaAberta changes
+  useEffect(() => {
+    if (mesaAberta !== null) {
+      getPedidosPorMesa(mesaAberta).then(setPedidosDaMesa);
+    } else {
+      setPedidosDaMesa([]);
+    }
+  }, [mesaAberta, pedidos]);
+
+  const totalMesa = pedidosDaMesa.reduce((sum, p) => sum + p.total, 0);
+
+  const handleExcluir = async (id: string) => {
+    await excluirPedidoStore(id);
+    await recarregar();
     toast.success("Pedido excluído com sucesso!");
   };
 
   // Agrupar pedidos por mesa
   const mesasComPedidos = [...new Set(pedidos.map((p) => p.mesa))].sort((a, b) => a - b);
 
-  const pedidosDaMesa = mesaAberta !== null ? getPedidosPorMesa(mesaAberta) : [];
-  const totalMesa = pedidosDaMesa.reduce((sum, p) => sum + p.total, 0);
-
-  const imprimirContaMesa = (mesa: number) => {
-    const pedidosMesa = getPedidosPorMesa(mesa);
+  const imprimirContaMesa = async (mesa: number) => {
+    const pedidosMesa = await getPedidosPorMesa(mesa);
     const totalGeral = pedidosMesa.reduce((sum, p) => sum + p.total, 0);
     const agora = new Date();
 
@@ -60,7 +79,7 @@ const Pedidos = () => {
     printWindow.document.write(`
       <html>
         <head>
-          <title>Conta Mesa ${mesa} - Ponto Certo</title>
+          <title>Conta ${mesa === 0 ? "WhatsApp" : `Mesa ${mesa}`} - Ponto Certo</title>
           <style>
             body { font-family: 'Courier New', monospace; padding: 20px; max-width: 400px; margin: 0 auto; }
             h1 { text-align: center; font-size: 18px; margin-bottom: 4px; }
@@ -76,7 +95,7 @@ const Pedidos = () => {
         </head>
         <body>
           <h1>PONTO CERTO - COMIDA CASEIRA</h1>
-          <h2>Conta da Mesa ${mesa}</h2>
+          <h2>Conta ${mesa === 0 ? "WhatsApp" : `da Mesa ${mesa}`}</h2>
           <div class="divider"></div>
           <p><strong>Data:</strong> ${agora.toLocaleDateString("pt-BR")} &nbsp; <strong>Hora:</strong> ${agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
           <div class="divider"></div>
@@ -112,12 +131,12 @@ const Pedidos = () => {
     printWindow.print();
   };
 
-  const handleFecharMesa = (mesa: number) => {
-    imprimirContaMesa(mesa);
-    fecharMesa(mesa);
-    recarregar();
+  const handleFecharMesa = async (mesa: number) => {
+    await imprimirContaMesa(mesa);
+    await fecharMesa(mesa);
+    await recarregar();
     setMesaAberta(null);
-    toast.success(`Mesa ${mesa} fechada! Conta enviada para impressão.`);
+    toast.success(mesa === 0 ? "Pedidos WhatsApp fechados!" : `Mesa ${mesa} fechada! Conta enviada para impressão.`);
   };
 
   return (
@@ -128,7 +147,7 @@ const Pedidos = () => {
       {mesasComPedidos.length > 0 && (
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
           {mesasComPedidos.map((mesa) => {
-            const pedidosMesa = getPedidosPorMesa(mesa);
+            const pedidosMesa = pedidos.filter(p => p.mesa === mesa);
             const totalMesaCard = pedidosMesa.reduce((sum, p) => sum + p.total, 0);
             return (
               <Card key={mesa} className="cursor-pointer hover:border-primary transition-colors" onClick={() => setMesaAberta(mesa)}>
@@ -150,7 +169,7 @@ const Pedidos = () => {
         <CardContent className="p-0">
           {pedidos.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">
-              Nenhum pedido registrado. Os pedidos do garçom aparecerão aqui automaticamente.
+              Nenhum pedido registrado. Os pedidos do garçom e WhatsApp aparecerão aqui automaticamente.
             </p>
           ) : (
             <Table>
@@ -244,7 +263,7 @@ const Pedidos = () => {
             ))}
           </div>
           <div className="border-t pt-3 flex justify-between items-center text-lg font-bold">
-            <span>Total da Mesa</span>
+            <span>Total</span>
             <span>R$ {totalMesa.toFixed(2)}</span>
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
@@ -254,14 +273,14 @@ const Pedidos = () => {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive">
-                  <Receipt className="size-4 mr-2" />Fechar Mesa
+                  <Receipt className="size-4 mr-2" />Fechar
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Fechar Mesa {mesaAberta}?</AlertDialogTitle>
+                  <AlertDialogTitle>Fechar {mesaAberta === 0 ? "pedidos WhatsApp" : `Mesa ${mesaAberta}`}?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    A conta será impressa e todos os pedidos desta mesa serão encerrados.
+                    A conta será impressa e todos os pedidos serão encerrados.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

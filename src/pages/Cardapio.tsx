@@ -33,6 +33,7 @@ const Cardapio = () => {
   const [endereco, setEndereco] = useState("");
   const [observacao, setObservacao] = useState("");
   const [tipoEntrega, setTipoEntrega] = useState<"entrega" | "retirada">("entrega");
+  const [enviando, setEnviando] = useState(false);
 
   const addToCart = (item: { id: string; nome: string; preco: number }, tipo: CartItem["tipo"]) => {
     setCarrinho((prev) => {
@@ -56,7 +57,7 @@ const Cardapio = () => {
   const taxaEntrega = tipoEntrega === "entrega" ? config.taxaEntrega : 0;
   const total = subtotal + taxaEntrega;
 
-  const enviarWhatsApp = () => {
+  const enviarWhatsApp = async () => {
     if (!config.whatsapp) {
       toast.error("Restaurante ainda não configurou o WhatsApp. Tente novamente mais tarde.");
       return;
@@ -73,6 +74,8 @@ const Cardapio = () => {
       toast.error("Informe o endereço de entrega");
       return;
     }
+
+    setEnviando(true);
 
     const linhas = [
       `🍽️ *PEDIDO - ${config.nomeRestaurante}*`,
@@ -98,39 +101,43 @@ const Cardapio = () => {
     const texto = encodeURIComponent(linhas.join("\n"));
     const numero = config.whatsapp.replace(/\D/g, "");
     const url = `https://wa.me/55${numero}?text=${texto}`;
-    
-    // Registrar como venda do dia
-    registrarVenda({
-      id: crypto.randomUUID(),
-      mesa: 0,
-      itens: carrinho.map((i) => ({
-        nome: i.nome,
-        preco: i.preco,
-        quantidade: i.quantidade,
-      })),
-      total,
-      fechadoEm: new Date().toISOString(),
-      observacaoGeral: `WhatsApp - ${nome}${tipoEntrega === "entrega" ? ` | ${endereco}` : " | Retirada"}`,
-    });
 
-    // Registrar como pedido para aparecer no painel de pedidos
-    const pedidoId = `WA${Date.now()}`;
-    const agora = new Date();
-    adicionarPedido({
-      id: pedidoId,
-      mesa: 0,
-      itens: carrinho.map((i) => ({
+    try {
+      // Registrar como venda do dia
+      await registrarVenda({
         id: crypto.randomUUID(),
-        nome: i.nome,
-        preco: i.preco,
-        quantidade: i.quantidade,
-      })),
-      total,
-      status: "pendente",
-      hora: agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-      criadoEm: agora.toISOString(),
-      observacaoGeral: `📱 WhatsApp - ${nome}${tipoEntrega === "entrega" ? ` | Entrega: ${endereco}` : " | Retirada"}`,
-    });
+        mesa: 0,
+        itens: carrinho.map((i) => ({
+          nome: i.nome,
+          preco: i.preco,
+          quantidade: i.quantidade,
+        })),
+        total,
+        fechadoEm: new Date().toISOString(),
+        observacaoGeral: `WhatsApp - ${nome}${tipoEntrega === "entrega" ? ` | ${endereco}` : " | Retirada"}`,
+      });
+
+      // Registrar como pedido para aparecer no painel de pedidos
+      const pedidoId = `WA${Date.now()}`;
+      const agora = new Date();
+      await adicionarPedido({
+        id: pedidoId,
+        mesa: 0,
+        itens: carrinho.map((i) => ({
+          id: crypto.randomUUID(),
+          nome: i.nome,
+          preco: i.preco,
+          quantidade: i.quantidade,
+        })),
+        total,
+        status: "pendente",
+        hora: agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        criadoEm: agora.toISOString(),
+        observacaoGeral: `📱 WhatsApp - ${nome}${tipoEntrega === "entrega" ? ` | Entrega: ${endereco}` : " | Retirada"}`,
+      });
+    } catch (err) {
+      console.error("Erro ao registrar pedido:", err);
+    }
 
     // Usar window.location.href como fallback para mobile
     const win = window.open(url, "_blank");
@@ -143,7 +150,8 @@ const Cardapio = () => {
     setNome("");
     setEndereco("");
     setObservacao("");
-    
+    setEnviando(false);
+
     toast.success("Pedido enviado para o WhatsApp!");
   };
 
@@ -257,7 +265,6 @@ const Cardapio = () => {
       {carrinho.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg z-50">
           <div className="max-w-2xl mx-auto p-4 space-y-3">
-            {/* Itens do carrinho */}
             <div className="max-h-40 overflow-y-auto space-y-2">
               {carrinho.map((item) => (
                 <div key={`${item.tipo}-${item.id}`} className="flex items-center justify-between text-sm">
@@ -276,34 +283,21 @@ const Cardapio = () => {
               ))}
             </div>
 
-            {/* Tipo de entrega */}
             <div className="flex gap-2">
-              <Button
-                variant={tipoEntrega === "entrega" ? "default" : "outline"}
-                size="sm"
-                className="flex-1"
-                onClick={() => setTipoEntrega("entrega")}
-              >
+              <Button variant={tipoEntrega === "entrega" ? "default" : "outline"} size="sm" className="flex-1" onClick={() => setTipoEntrega("entrega")}>
                 <Truck className="size-4 mr-1" />Entrega
               </Button>
-              <Button
-                variant={tipoEntrega === "retirada" ? "default" : "outline"}
-                size="sm"
-                className="flex-1"
-                onClick={() => setTipoEntrega("retirada")}
-              >
+              <Button variant={tipoEntrega === "retirada" ? "default" : "outline"} size="sm" className="flex-1" onClick={() => setTipoEntrega("retirada")}>
                 🏪 Retirada
               </Button>
             </div>
 
-            {/* Dados do cliente */}
             <Input placeholder="Seu nome *" value={nome} onChange={(e) => setNome(e.target.value)} className="text-sm" />
             {tipoEntrega === "entrega" && (
               <Input placeholder="Endereço de entrega *" value={endereco} onChange={(e) => setEndereco(e.target.value)} className="text-sm" />
             )}
             <Textarea placeholder="Observação (opcional)" value={observacao} onChange={(e) => setObservacao(e.target.value)} className="text-sm min-h-[40px]" />
 
-            {/* Total e botão */}
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Subtotal: R$ {subtotal.toFixed(2)}</p>
@@ -312,9 +306,9 @@ const Cardapio = () => {
                 )}
                 <p className="font-bold text-lg">Total: R$ {total.toFixed(2)}</p>
               </div>
-              <Button onClick={enviarWhatsApp} size="lg" className="gap-2">
+              <Button onClick={enviarWhatsApp} size="lg" className="gap-2" disabled={enviando}>
                 <Send className="size-4" />
-                Pedir via WhatsApp
+                {enviando ? "Enviando..." : "Pedir via WhatsApp"}
               </Button>
             </div>
           </div>

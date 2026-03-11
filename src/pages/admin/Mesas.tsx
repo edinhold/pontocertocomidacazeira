@@ -40,8 +40,8 @@ const Mesas = () => {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ numero: "", capacidade: "" });
 
-  const atualizarOcupacao = useCallback(() => {
-    const pedidos = getPedidos();
+  const atualizarOcupacao = useCallback(async () => {
+    const pedidos = await getPedidos();
     const ocupadas = new Set(pedidos.map((p) => p.mesa));
     setMesasOcupadas(ocupadas);
   }, []);

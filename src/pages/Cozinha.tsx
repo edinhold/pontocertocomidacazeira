@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { LogOut, Printer, Check, ChefHat, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import { getPedidos, atualizarStatusPedido, type Pedido } from "@/lib/pedidosStore";
+import { supabase } from "@/integrations/supabase/client";
 
 const playNotificationSound = () => {
   try {
@@ -31,12 +32,12 @@ const playNotificationSound = () => {
 
 const Cozinha = () => {
   const navigate = useNavigate();
-  const [pedidos, setPedidos] = useState<Pedido[]>(getPedidos());
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [somAtivo, setSomAtivo] = useState(true);
   const prevPendentesRef = useRef<string[]>([]);
 
-  const carregarPedidos = useCallback(() => {
-    const todos = getPedidos();
+  const carregarPedidos = useCallback(async () => {
+    const todos = await getPedidos();
     setPedidos(todos);
 
     const pendenteIds = todos.filter(p => p.status === "pendente").map(p => p.id);
@@ -52,15 +53,25 @@ const Cozinha = () => {
     carregarPedidos();
     const interval = setInterval(carregarPedidos, 3000);
     window.addEventListener("pedidos-updated", carregarPedidos);
+
+    // Realtime subscription
+    const channel = supabase
+      .channel('cozinha-pedidos')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, () => {
+        carregarPedidos();
+      })
+      .subscribe();
+
     return () => {
       clearInterval(interval);
       window.removeEventListener("pedidos-updated", carregarPedidos);
+      supabase.removeChannel(channel);
     };
   }, [carregarPedidos]);
 
-  const updateStatus = (id: string, status: Pedido["status"]) => {
-    atualizarStatusPedido(id, status);
-    carregarPedidos();
+  const updateStatus = async (id: string, status: Pedido["status"]) => {
+    await atualizarStatusPedido(id, status);
+    await carregarPedidos();
     if (status === "preparando") toast.info("Pedido aceito!");
     if (status === "pronto") toast.success("Pedido pronto!");
   };
@@ -72,7 +83,7 @@ const Cozinha = () => {
       <body>
         <h2>PONTO CERTO - COMIDA CASEIRA</h2><hr/>
         <p><strong>Pedido:</strong> #${pedido.id}</p>
-        <p><strong>Mesa:</strong> ${pedido.mesa}</p>
+        <p><strong>Mesa:</strong> ${pedido.mesa === 0 ? "WhatsApp" : pedido.mesa}</p>
         <p><strong>Hora:</strong> ${pedido.hora}</p><hr/>
         ${pedido.itens.map((i) => `<div class="item"><span>${i.nome}</span><span>x${i.quantidade}</span></div>${i.observacao ? `<div style="font-size:11px;color:#666;padding-left:8px">📝 ${i.observacao}</div>` : ""}`).join("")}
         ${pedido.observacaoGeral ? `<hr/><div style="font-size:11px;color:#666">📋 Obs. geral: ${pedido.observacaoGeral}</div>` : ""}

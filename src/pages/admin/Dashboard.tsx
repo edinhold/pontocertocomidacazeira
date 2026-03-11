@@ -11,6 +11,7 @@ import { DollarSign, ShoppingBag, TrendingUp, Users, Printer, Lock, Calendar, Ca
 import { toast } from "sonner";
 import { getPedidos, type Pedido } from "@/lib/pedidosStore";
 import { getVendas, type Venda } from "@/lib/vendasStore";
+import { supabase } from "@/integrations/supabase/client";
 
 const isSameDay = (d1: Date, d2: Date) =>
   d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
@@ -35,16 +36,27 @@ const Dashboard = () => {
   const [diaFechado, setDiaFechado] = useState(false);
   const [periodo, setPeriodo] = useState<"dia" | "semana" | "mes">("dia");
 
+  const loadData = async () => {
+    const [p, v] = await Promise.all([getPedidos(), getVendas()]);
+    setPedidos(p);
+    setVendas(v);
+  };
+
   useEffect(() => {
-    const loadPedidos = () => setPedidos(getPedidos());
-    const loadVendas = () => setVendas(getVendas());
-    loadPedidos();
-    loadVendas();
-    window.addEventListener("pedidos-updated", loadPedidos);
-    window.addEventListener("vendas-updated", loadVendas);
+    loadData();
+    window.addEventListener("pedidos-updated", loadData);
+    window.addEventListener("vendas-updated", loadData);
+
+    const channel = supabase
+      .channel('dashboard')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, () => loadData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vendas' }, () => loadData())
+      .subscribe();
+
     return () => {
-      window.removeEventListener("pedidos-updated", loadPedidos);
-      window.removeEventListener("vendas-updated", loadVendas);
+      window.removeEventListener("pedidos-updated", loadData);
+      window.removeEventListener("vendas-updated", loadData);
+      supabase.removeChannel(channel);
     };
   }, []);
 
@@ -118,7 +130,7 @@ const Dashboard = () => {
               ${vendasFiltradas.map((v, i) => `
                 <tr>
                   <td>${i + 1}</td>
-                  <td>${v.mesa}</td>
+                  <td>${v.mesa === 0 ? "WhatsApp" : v.mesa}</td>
                   <td>${v.itens.map(it => it.nome).join(", ")}</td>
                   <td class="text-right">R$ ${v.total.toFixed(2)}</td>
                 </tr>
@@ -128,7 +140,7 @@ const Dashboard = () => {
           <div class="divider"></div>
           <table>
             <tr class="total-row">
-              <td>Mesas Fechadas:</td>
+              <td>Vendas Fechadas:</td>
               <td class="text-right">${vendasFiltradas.length}</td>
             </tr>
             <tr class="total-row">
@@ -237,7 +249,7 @@ const Dashboard = () => {
         <CardContent>
           {vendasFiltradas.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">
-              Nenhuma venda registrada neste período. As vendas são computadas ao fechar uma mesa.
+              Nenhuma venda registrada neste período. As vendas são computadas ao fechar uma mesa ou via WhatsApp.
             </p>
           ) : (
             <Table>
