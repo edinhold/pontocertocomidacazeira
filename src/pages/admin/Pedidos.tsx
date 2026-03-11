@@ -216,7 +216,7 @@ const Pedidos = () => {
       <Dialog open={mesaAberta !== null} onOpenChange={(open) => !open && setMesaAberta(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Mesa {mesaAberta} — Conta</DialogTitle>
+            <DialogTitle>{mesaAberta === 0 ? "📱 WhatsApp" : `Mesa ${mesaAberta}`} — Conta</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 max-h-[400px] overflow-y-auto">
             {pedidosDaMesa.map((p) => (
