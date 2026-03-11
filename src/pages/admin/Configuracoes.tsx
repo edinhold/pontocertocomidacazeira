@@ -1,23 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Save, Settings } from "lucide-react";
 import { toast } from "sonner";
-import { getConfig, salvarConfig } from "@/lib/configStore";
+import { getConfigAsync, salvarConfigAsync, type ConfigLoja } from "@/lib/configStore";
+
+const defaultConfig: ConfigLoja = {
+  whatsapp: "",
+  taxaEntrega: 0,
+  nomeRestaurante: "Ponto Certo - Comida Caseira",
+};
 
 const Configuracoes = () => {
-  const [config, setConfig] = useState(getConfig());
+  const [config, setConfig] = useState<ConfigLoja>(defaultConfig);
+  const [loading, setLoading] = useState(true);
 
-  const handleSave = () => {
+  useEffect(() => {
+    getConfigAsync().then((c) => {
+      setConfig(c);
+      setLoading(false);
+    });
+  }, []);
+
+  const handleSave = async () => {
     if (!config.whatsapp.trim()) {
       toast.error("Informe o número do WhatsApp");
       return;
     }
-    salvarConfig(config);
+    await salvarConfigAsync(config);
     toast.success("Configurações salvas com sucesso!");
   };
+
+  if (loading) {
+    return <p className="text-center py-8 text-muted-foreground">Carregando configurações...</p>;
+  }
 
   return (
     <div className="space-y-6">
