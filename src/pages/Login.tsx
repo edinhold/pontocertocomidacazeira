@@ -64,7 +64,7 @@ const Login = () => {
       return;
     }
 
-    const result = await cadastrarCliente(regNome, regEmail, regPassword);
+    const result = await cadastrarCliente(regNome, regEmail, regPassword, regWhatsapp.trim());
     if (!result.success) {
       toast.error(result.message);
       return;
@@ -75,6 +75,7 @@ const Login = () => {
     setRegEmail("");
     setRegPassword("");
     setRegConfirm("");
+    setRegWhatsapp("");
   };
 
   return (
