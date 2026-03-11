@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import { registrarVenda } from "./vendasStore";
 
 export interface ItemPedido {
@@ -19,51 +20,81 @@ export interface Pedido {
   observacaoGeral?: string;
 }
 
-const STORAGE_KEY = "pontocerto_pedidos";
-
-export function getPedidos(): Pedido[] {
-  try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch {
-    return [];
-  }
-}
-
-export function salvarPedidos(pedidos: Pedido[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(pedidos));
+function dispatchUpdate() {
   window.dispatchEvent(new Event("pedidos-updated"));
 }
 
-export function adicionarPedido(pedido: Pedido) {
-  const pedidos = getPedidos();
-  pedidos.push(pedido);
-  salvarPedidos(pedidos);
+function rowToPedido(row: any): Pedido {
+  return {
+    id: row.id,
+    mesa: row.mesa,
+    itens: row.itens as ItemPedido[],
+    total: Number(row.total),
+    status: row.status as Pedido["status"],
+    hora: row.hora,
+    criadoEm: row.criado_em,
+    observacaoGeral: row.observacao_geral || undefined,
+  };
 }
 
-export function atualizarStatusPedido(id: string, status: Pedido["status"]) {
-  const pedidos = getPedidos();
-  const idx = pedidos.findIndex((p) => p.id === id);
-  if (idx !== -1) {
-    pedidos[idx].status = status;
-    salvarPedidos(pedidos);
+export async function getPedidos(): Promise<Pedido[]> {
+  const { data, error } = await supabase
+    .from("pedidos")
+    .select("*")
+    .order("criado_em", { ascending: true });
+  if (error) {
+    console.error("Erro ao buscar pedidos:", error);
+    return [];
   }
+  return (data || []).map(rowToPedido);
 }
 
-export function excluirPedido(id: string) {
-  const pedidos = getPedidos().filter((p) => p.id !== id);
-  salvarPedidos(pedidos);
+export async function adicionarPedido(pedido: Pedido) {
+  const { error } = await supabase.from("pedidos").insert({
+    id: pedido.id,
+    mesa: pedido.mesa,
+    itens: pedido.itens as any,
+    total: pedido.total,
+    status: pedido.status,
+    hora: pedido.hora,
+    criado_em: pedido.criadoEm,
+    observacao_geral: pedido.observacaoGeral || null,
+  });
+  if (error) console.error("Erro ao adicionar pedido:", error);
+  dispatchUpdate();
 }
 
-export function getPedidosPorMesa(mesa: number): Pedido[] {
-  return getPedidos().filter((p) => p.mesa === mesa);
+export async function atualizarStatusPedido(id: string, status: Pedido["status"]) {
+  const { error } = await supabase
+    .from("pedidos")
+    .update({ status })
+    .eq("id", id);
+  if (error) console.error("Erro ao atualizar status:", error);
+  dispatchUpdate();
 }
 
-export function fecharMesa(mesa: number) {
-  const todos = getPedidos();
-  const pedidosMesa = todos.filter((p) => p.mesa === mesa);
+export async function excluirPedido(id: string) {
+  const { error } = await supabase.from("pedidos").delete().eq("id", id);
+  if (error) console.error("Erro ao excluir pedido:", error);
+  dispatchUpdate();
+}
 
-  // Registrar venda consolidada da mesa
+export async function getPedidosPorMesa(mesa: number): Promise<Pedido[]> {
+  const { data, error } = await supabase
+    .from("pedidos")
+    .select("*")
+    .eq("mesa", mesa)
+    .order("criado_em", { ascending: true });
+  if (error) {
+    console.error("Erro ao buscar pedidos da mesa:", error);
+    return [];
+  }
+  return (data || []).map(rowToPedido);
+}
+
+export async function fecharMesa(mesa: number) {
+  const pedidosMesa = await getPedidosPorMesa(mesa);
+
   if (pedidosMesa.length > 0) {
     const itensConsolidados = pedidosMesa.flatMap((p) =>
       p.itens.map((item) => ({
@@ -79,7 +110,7 @@ export function fecharMesa(mesa: number) {
       .map((p) => p.observacaoGeral)
       .join("; ");
 
-    registrarVenda({
+    await registrarVenda({
       id: `V${Date.now()}`,
       mesa,
       itens: itensConsolidados,
@@ -89,6 +120,7 @@ export function fecharMesa(mesa: number) {
     });
   }
 
-  const restantes = todos.filter((p) => p.mesa !== mesa);
-  salvarPedidos(restantes);
+  const { error } = await supabase.from("pedidos").delete().eq("mesa", mesa);
+  if (error) console.error("Erro ao fechar mesa:", error);
+  dispatchUpdate();
 }
