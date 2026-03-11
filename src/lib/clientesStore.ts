@@ -98,3 +98,15 @@ export async function toggleAtivoCliente(id: string, ativo: boolean): Promise<bo
   }
   return true;
 }
+
+export async function alterarSenhaCliente(id: string, novaSenha: string): Promise<boolean> {
+  const { error } = await supabase
+    .from("clientes")
+    .update({ senha: novaSenha })
+    .eq("id", id);
+  if (error) {
+    console.error("Erro ao alterar senha:", error);
+    return false;
+  }
+  return true;
+}
