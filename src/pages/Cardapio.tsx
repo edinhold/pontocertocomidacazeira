@@ -21,7 +21,7 @@ interface CartItem {
 }
 
 const Cardapio = () => {
-  const config = getConfig();
+  const { config, loading } = useConfig();
   const pratos = getPratos().filter((p) => p.disponivel);
   const bebidas = getBebidas();
   const adicionais = getAdicionais();
