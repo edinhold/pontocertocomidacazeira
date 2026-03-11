@@ -19,6 +19,7 @@ const Login = () => {
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
   const [regConfirm, setRegConfirm] = useState("");
+  const [regWhatsapp, setRegWhatsapp] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +64,7 @@ const Login = () => {
       return;
     }
 
-    const result = await cadastrarCliente(regNome, regEmail, regPassword);
+    const result = await cadastrarCliente(regNome, regEmail, regPassword, regWhatsapp.trim());
     if (!result.success) {
       toast.error(result.message);
       return;
@@ -74,6 +75,7 @@ const Login = () => {
     setRegEmail("");
     setRegPassword("");
     setRegConfirm("");
+    setRegWhatsapp("");
   };
 
   return (
@@ -127,6 +129,10 @@ const Login = () => {
                 <div className="space-y-2">
                   <Label htmlFor="reg-confirm">Confirmar senha</Label>
                   <Input id="reg-confirm" type="password" placeholder="Repita a senha" value={regConfirm} onChange={(e) => setRegConfirm(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reg-whatsapp">WhatsApp</Label>
+                  <Input id="reg-whatsapp" type="tel" placeholder="(11) 99999-9999" value={regWhatsapp} onChange={(e) => setRegWhatsapp(e.target.value)} />
                 </div>
                 <Button type="submit" className="w-full">Criar conta</Button>
               </form>
