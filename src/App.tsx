@@ -41,6 +41,7 @@ const App = () => (
             <Route path="adicionais" element={<Adicionais />} />
             <Route path="configuracoes" element={<Configuracoes />} />
             <Route path="mensagens" element={<MensagensProgramadas />} />
+            <Route path="usuarios" element={<Usuarios />} />
           </Route>
           <Route path="/garcom" element={<Garcom />} />
           <Route path="/cozinha" element={<Cozinha />} />
