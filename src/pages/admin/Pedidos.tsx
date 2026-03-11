@@ -169,7 +169,7 @@ const Pedidos = () => {
                 {pedidos.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.id}</TableCell>
-                    <TableCell>Mesa {p.mesa}</TableCell>
+                    <TableCell>{p.mesa === 0 ? "📱 WhatsApp" : `Mesa ${p.mesa}`}</TableCell>
                     <TableCell className="max-w-[200px] truncate">
                       {p.itens.map((i) => `${i.quantidade}x ${i.nome}`).join(", ")}
                     </TableCell>
