@@ -31,6 +31,7 @@ const menuItems = [
   { title: "Pratos do Dia", icon: UtensilsCrossed, path: "/admin/pratos" },
   { title: "Bebidas", icon: Wine, path: "/admin/bebidas" },
   { title: "Funcionários", icon: Users, path: "/admin/funcionarios" },
+  { title: "Usuários", icon: Users, path: "/admin/usuarios" },
   { title: "Mesas", icon: Grid3X3, path: "/admin/mesas" },
   { title: "Pedidos", icon: ClipboardList, path: "/admin/pedidos" },
   { title: "Adicionais", icon: CirclePlus, path: "/admin/adicionais" },

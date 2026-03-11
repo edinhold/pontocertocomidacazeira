@@ -14,6 +14,7 @@ import Pedidos from "./pages/admin/Pedidos";
 import Adicionais from "./pages/admin/Adicionais";
 import Configuracoes from "./pages/admin/Configuracoes";
 import MensagensProgramadas from "./pages/admin/MensagensProgramadas";
+import Usuarios from "./pages/admin/Usuarios";
 import Garcom from "./pages/Garcom";
 import Cozinha from "./pages/Cozinha";
 import Cardapio from "./pages/Cardapio";
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="adicionais" element={<Adicionais />} />
             <Route path="configuracoes" element={<Configuracoes />} />
             <Route path="mensagens" element={<MensagensProgramadas />} />
+            <Route path="usuarios" element={<Usuarios />} />
           </Route>
           <Route path="/garcom" element={<Garcom />} />
           <Route path="/cozinha" element={<Cozinha />} />

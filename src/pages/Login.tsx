@@ -20,7 +20,7 @@ const Login = () => {
   const [regPassword, setRegPassword] = useState("");
   const [regConfirm, setRegConfirm] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginEmail || !loginPassword) {
       toast.error("Preencha todos os campos");
@@ -37,7 +37,7 @@ const Login = () => {
     }
 
     // Tenta autenticar como cliente
-    const cliente = autenticarCliente(loginEmail, loginPassword);
+    const cliente = await autenticarCliente(loginEmail, loginPassword);
     if (cliente) {
       localStorage.setItem("pontocerto_user", JSON.stringify({ id: cliente.id, nome: cliente.nome, tipo: "cliente" }));
       navigate("/cardapio");
@@ -48,7 +48,7 @@ const Login = () => {
     toast.error("Email ou senha inválidos");
   };
 
-  const handleCadastro = (e: React.FormEvent) => {
+  const handleCadastro = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regNome || !regEmail || !regPassword || !regConfirm) {
       toast.error("Preencha todos os campos");
@@ -63,7 +63,7 @@ const Login = () => {
       return;
     }
 
-    const result = cadastrarCliente(regNome, regEmail, regPassword);
+    const result = await cadastrarCliente(regNome, regEmail, regPassword);
     if (!result.success) {
       toast.error(result.message);
       return;
