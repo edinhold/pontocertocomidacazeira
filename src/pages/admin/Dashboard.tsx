@@ -252,7 +252,7 @@ const Dashboard = () => {
               <TableBody>
                 {vendasFiltradas.map((v) => (
                   <TableRow key={v.id}>
-                    <TableCell>Mesa {v.mesa}</TableCell>
+                    <TableCell>{v.mesa === 0 ? "📱 WhatsApp" : `Mesa ${v.mesa}`}</TableCell>
                     <TableCell>{v.itens.map(it => `${it.quantidade}x ${it.nome}`).join(", ")}</TableCell>
                     <TableCell>R$ {v.total.toFixed(2).replace(".", ",")}</TableCell>
                     <TableCell>{new Date(v.fechadoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</TableCell>
