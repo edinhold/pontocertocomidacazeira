@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      clientes: {
+        Row: {
+          ativo: boolean
+          criado_em: string
+          email: string
+          id: string
+          nome: string
+          senha: string
+          whatsapp: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          criado_em?: string
+          email: string
+          id?: string
+          nome: string
+          senha: string
+          whatsapp?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          criado_em?: string
+          email?: string
+          id?: string
+          nome?: string
+          senha?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       configuracoes: {
         Row: {
           chave: string
