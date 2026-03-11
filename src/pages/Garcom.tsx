@@ -9,6 +9,7 @@ import { LogOut, Plus, Minus, Send, MessageSquare } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { adicionarPedido, type ItemPedido } from "@/lib/pedidosStore";
+import { getConfig } from "@/lib/configStore";
 
 const mesas = [1, 2, 3, 4, 5, 6, 7, 8];
 const cardapio = [
