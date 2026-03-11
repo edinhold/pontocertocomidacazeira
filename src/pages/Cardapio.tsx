@@ -94,7 +94,7 @@ const Cardapio = () => {
     }
 
     const texto = encodeURIComponent(linhas.join("\n"));
-    const numero = configAtual.whatsapp.replace(/\D/g, "");
+    const numero = config.whatsapp.replace(/\D/g, "");
     const url = `https://wa.me/55${numero}?text=${texto}`;
     
     // Usar window.location.href como fallback para mobile
