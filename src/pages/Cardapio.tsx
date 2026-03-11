@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { getPratos, type Prato } from "@/lib/pratosStore";
 import { getBebidas, type Bebida } from "@/lib/bebidasStore";
 import { getAdicionais, type Adicional } from "@/lib/adicionaisStore";
-import { getConfig } from "@/lib/configStore";
+import { useConfig } from "@/hooks/useConfig";
 import Logo from "@/components/Logo";
 
 interface CartItem {
@@ -21,7 +21,7 @@ interface CartItem {
 }
 
 const Cardapio = () => {
-  const config = getConfig();
+  const { config, loading } = useConfig();
   const pratos = getPratos().filter((p) => p.disponivel);
   const bebidas = getBebidas();
   const adicionais = getAdicionais();
@@ -55,10 +55,7 @@ const Cardapio = () => {
   const total = subtotal + taxaEntrega;
 
   const enviarWhatsApp = () => {
-    // Ler config fresca no momento do envio
-    const configAtual = getConfig();
-    
-    if (!configAtual.whatsapp) {
+    if (!config.whatsapp) {
       toast.error("Restaurante ainda não configurou o WhatsApp. Tente novamente mais tarde.");
       return;
     }
@@ -76,7 +73,7 @@ const Cardapio = () => {
     }
 
     const linhas = [
-      `🍽️ *PEDIDO - ${configAtual.nomeRestaurante}*`,
+      `🍽️ *PEDIDO - ${config.nomeRestaurante}*`,
       "",
       `👤 *Nome:* ${nome}`,
       tipoEntrega === "entrega" ? `📍 *Endereço:* ${endereco}` : `🏪 *Retirada no local*`,
@@ -97,7 +94,7 @@ const Cardapio = () => {
     }
 
     const texto = encodeURIComponent(linhas.join("\n"));
-    const numero = configAtual.whatsapp.replace(/\D/g, "");
+    const numero = config.whatsapp.replace(/\D/g, "");
     const url = `https://wa.me/55${numero}?text=${texto}`;
     
     // Usar window.location.href como fallback para mobile
