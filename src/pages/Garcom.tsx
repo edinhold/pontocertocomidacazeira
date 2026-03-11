@@ -59,6 +59,32 @@ const Garcom = () => {
     };
 
     adicionarPedido(pedido);
+
+    // Enviar notificação via WhatsApp
+    const config = getConfig();
+    if (config.whatsapp) {
+      const linhas = [
+        `🍽️ *NOVO PEDIDO - ${config.nomeRestaurante}*`,
+        "",
+        `🪑 *Mesa:* ${mesaSelecionada}`,
+        `🕐 *Horário:* ${pedido.hora}`,
+        "",
+        "📋 *Itens do Pedido:*",
+        ...pedido.itens.map((i) => {
+          let linha = `• ${i.quantidade}x ${i.nome} — R$ ${(i.preco * i.quantidade).toFixed(2)}`;
+          if (i.observacao) linha += ` _(${i.observacao})_`;
+          return linha;
+        }),
+        "",
+        `✅ *Total:* R$ ${pedido.total.toFixed(2)}`,
+      ];
+      if (pedido.observacaoGeral) {
+        linhas.push("", `📝 *Observação:* ${pedido.observacaoGeral}`);
+      }
+      const texto = encodeURIComponent(linhas.join("\n"));
+      window.open(`https://wa.me/55${config.whatsapp}?text=${texto}`, "_blank");
+    }
+
     toast.success(`Pedido enviado para a cozinha! Mesa ${mesaSelecionada}`);
     setItens([]);
     setMesaSelecionada("");
