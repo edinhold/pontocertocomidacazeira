@@ -68,10 +68,19 @@ export async function salvarConfigAsync(config: ConfigLoja) {
   ];
 
   for (const update of updates) {
-    await supabase
+    // Try update first
+    const { data } = await supabase
       .from("configuracoes")
       .update({ valor: update.valor })
-      .eq("chave", update.chave);
+      .eq("chave", update.chave)
+      .select();
+
+    // If no row was updated, insert it
+    if (!data || data.length === 0) {
+      await supabase
+        .from("configuracoes")
+        .insert({ chave: update.chave, valor: update.valor });
+    }
   }
 }
 
