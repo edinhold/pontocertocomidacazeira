@@ -19,6 +19,7 @@ const Login = () => {
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
   const [regConfirm, setRegConfirm] = useState("");
+  const [regWhatsapp, setRegWhatsapp] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
