@@ -1,0 +1,184 @@
+import { useState, useEffect, useCallback } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
+import { Trash2, Plus, UserCheck, UserX, Phone } from "lucide-react";
+import { toast } from "sonner";
+import {
+  getClientes, cadastrarCliente, excluirCliente, toggleAtivoCliente, type Cliente,
+} from "@/lib/clientesStore";
+
+const Usuarios = () => {
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ nome: "", email: "", senha: "", whatsapp: "" });
+  const [salvando, setSalvando] = useState(false);
+
+  const carregar = useCallback(async () => {
+    const data = await getClientes();
+    setClientes(data);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    carregar();
+  }, [carregar]);
+
+  const handleCadastrar = async () => {
+    if (!form.nome.trim() || !form.email.trim() || !form.senha.trim()) {
+      toast.error("Preencha nome, e-mail e senha");
+      return;
+    }
+    setSalvando(true);
+    const result = await cadastrarCliente(form.nome.trim(), form.email.trim(), form.senha, form.whatsapp.trim());
+    setSalvando(false);
+    if (result.success) {
+      toast.success(result.message);
+      setOpen(false);
+      setForm({ nome: "", email: "", senha: "", whatsapp: "" });
+      carregar();
+    } else {
+      toast.error(result.message);
+    }
+  };
+
+  const handleExcluir = async (id: string) => {
+    const ok = await excluirCliente(id);
+    if (ok) {
+      toast.success("Cliente excluído!");
+      carregar();
+    } else {
+      toast.error("Erro ao excluir cliente");
+    }
+  };
+
+  const handleToggleAtivo = async (id: string, ativo: boolean) => {
+    const ok = await toggleAtivoCliente(id, !ativo);
+    if (ok) {
+      toast.success(ativo ? "Cliente desativado" : "Cliente ativado");
+      carregar();
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Usuários</h1>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button><Plus className="size-4 mr-2" />Novo Cliente</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Cadastrar Cliente</DialogTitle></DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Nome</Label>
+                <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Nome completo" />
+              </div>
+              <div className="space-y-2">
+                <Label>E-mail</Label>
+                <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="email@exemplo.com" />
+              </div>
+              <div className="space-y-2">
+                <Label>Senha</Label>
+                <Input type="password" value={form.senha} onChange={(e) => setForm({ ...form, senha: e.target.value })} placeholder="Senha de acesso" />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1.5"><Phone className="size-3.5" /> WhatsApp</Label>
+                <Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} placeholder="(11) 99999-9999" />
+              </div>
+              <Button onClick={handleCadastrar} className="w-full" disabled={salvando}>
+                {salvando ? "Salvando..." : "Cadastrar"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Clientes Cadastrados ({clientes.length})</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {loading ? (
+            <p className="text-muted-foreground text-center py-8">Carregando...</p>
+          ) : clientes.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">Nenhum cliente cadastrado.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>E-mail</TableHead>
+                  <TableHead>WhatsApp</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Cadastrado em</TableHead>
+                  <TableHead className="w-28"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {clientes.map((c) => (
+                  <TableRow key={c.id}>
+                    <TableCell className="font-medium">{c.nome}</TableCell>
+                    <TableCell>{c.email}</TableCell>
+                    <TableCell>{c.whatsapp || "—"}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={c.ativo ? "default" : "secondary"}
+                        className="cursor-pointer"
+                        onClick={() => handleToggleAtivo(c.id, c.ativo)}
+                      >
+                        {c.ativo ? (
+                          <><UserCheck className="size-3 mr-1" />Ativo</>
+                        ) : (
+                          <><UserX className="size-3 mr-1" />Inativo</>
+                        )}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {new Date(c.criadoEm).toLocaleDateString("pt-BR")}
+                    </TableCell>
+                    <TableCell>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir {c.nome}?</AlertDialogTitle>
+                            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleExcluir(c.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default Usuarios;
