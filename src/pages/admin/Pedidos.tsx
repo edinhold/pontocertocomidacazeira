@@ -133,7 +133,7 @@ const Pedidos = () => {
             return (
               <Card key={mesa} className="cursor-pointer hover:border-primary transition-colors" onClick={() => setMesaAberta(mesa)}>
                 <CardContent className="p-4 text-center">
-                  <p className="text-lg font-bold">Mesa {mesa}</p>
+                  <p className="text-lg font-bold">{mesa === 0 ? "📱 WhatsApp" : `Mesa ${mesa}`}</p>
                   <p className="text-sm text-muted-foreground">{pedidosMesa.length} pedido(s)</p>
                   <p className="text-base font-semibold mt-1">R$ {totalMesaCard.toFixed(2)}</p>
                 </CardContent>
