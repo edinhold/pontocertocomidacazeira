@@ -12,10 +12,10 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { Trash2, Plus, UserCheck, UserX, Phone } from "lucide-react";
+import { Trash2, Plus, UserCheck, UserX, Phone, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import {
-  getClientes, cadastrarCliente, excluirCliente, toggleAtivoCliente, type Cliente,
+  getClientes, cadastrarCliente, excluirCliente, toggleAtivoCliente, alterarSenhaCliente, type Cliente,
 } from "@/lib/clientesStore";
 
 const Usuarios = () => {
@@ -24,6 +24,13 @@ const Usuarios = () => {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ nome: "", email: "", senha: "", whatsapp: "" });
   const [salvando, setSalvando] = useState(false);
+
+  // State for password change dialog
+  const [senhaDialogOpen, setSenhaDialogOpen] = useState(false);
+  const [senhaClienteId, setSenhaClienteId] = useState("");
+  const [senhaClienteNome, setSenhaClienteNome] = useState("");
+  const [novaSenha, setNovaSenha] = useState("");
+  const [confirmaSenha, setConfirmaSenha] = useState("");
 
   const carregar = useCallback(async () => {
     const data = await getClientes();
@@ -71,6 +78,34 @@ const Usuarios = () => {
     }
   };
 
+  const handleAlterarSenha = async () => {
+    if (!novaSenha || novaSenha.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+    if (novaSenha !== confirmaSenha) {
+      toast.error("As senhas não coincidem");
+      return;
+    }
+    const ok = await alterarSenhaCliente(senhaClienteId, novaSenha);
+    if (ok) {
+      toast.success("Senha alterada com sucesso!");
+      setSenhaDialogOpen(false);
+      setNovaSenha("");
+      setConfirmaSenha("");
+    } else {
+      toast.error("Erro ao alterar senha");
+    }
+  };
+
+  const openSenhaDialog = (cliente: Cliente) => {
+    setSenhaClienteId(cliente.id);
+    setSenhaClienteNome(cliente.nome);
+    setNovaSenha("");
+    setConfirmaSenha("");
+    setSenhaDialogOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -105,6 +140,24 @@ const Usuarios = () => {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Dialog para alterar senha */}
+      <Dialog open={senhaDialogOpen} onOpenChange={setSenhaDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Alterar senha — {senhaClienteNome}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Nova senha</Label>
+              <Input type="password" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} placeholder="Mínimo 6 caracteres" />
+            </div>
+            <div className="space-y-2">
+              <Label>Confirmar nova senha</Label>
+              <Input type="password" value={confirmaSenha} onChange={(e) => setConfirmaSenha(e.target.value)} placeholder="Repita a senha" />
+            </div>
+            <Button onClick={handleAlterarSenha} className="w-full">Salvar nova senha</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader>
@@ -150,25 +203,30 @@ const Usuarios = () => {
                       {new Date(c.criadoEm).toLocaleDateString("pt-BR")}
                     </TableCell>
                     <TableCell>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                            <Trash2 className="size-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Excluir {c.nome}?</AlertDialogTitle>
-                            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleExcluir(c.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                              Excluir
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => openSenhaDialog(c)} title="Alterar senha">
+                          <KeyRound className="size-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir {c.nome}?</AlertDialogTitle>
+                              <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleExcluir(c.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                Excluir
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
