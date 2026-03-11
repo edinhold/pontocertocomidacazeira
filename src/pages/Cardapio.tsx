@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { getPratos, type Prato } from "@/lib/pratosStore";
 import { getBebidas, type Bebida } from "@/lib/bebidasStore";
 import { getAdicionais, type Adicional } from "@/lib/adicionaisStore";
-import { getConfig } from "@/lib/configStore";
+import { useConfig } from "@/hooks/useConfig";
 import Logo from "@/components/Logo";
 
 interface CartItem {
