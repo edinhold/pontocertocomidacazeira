@@ -73,7 +73,7 @@ const Cardapio = () => {
     }
 
     const linhas = [
-      `🍽️ *PEDIDO - ${configAtual.nomeRestaurante}*`,
+      `🍽️ *PEDIDO - ${config.nomeRestaurante}*`,
       "",
       `👤 *Nome:* ${nome}`,
       tipoEntrega === "entrega" ? `📍 *Endereço:* ${endereco}` : `🏪 *Retirada no local*`,
