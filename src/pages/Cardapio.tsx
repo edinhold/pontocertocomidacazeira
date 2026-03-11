@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { getPratos, type Prato } from "@/lib/pratosStore";
 import { getBebidas, type Bebida } from "@/lib/bebidasStore";
 import { getAdicionais, type Adicional } from "@/lib/adicionaisStore";
+import { registrarVenda } from "@/lib/vendasStore";
 import { useConfig } from "@/hooks/useConfig";
 import Logo from "@/components/Logo";
 
@@ -97,11 +98,31 @@ const Cardapio = () => {
     const numero = config.whatsapp.replace(/\D/g, "");
     const url = `https://wa.me/55${numero}?text=${texto}`;
     
+    // Registrar como venda do dia
+    registrarVenda({
+      id: crypto.randomUUID(),
+      mesa: 0, // 0 = pedido via WhatsApp/delivery
+      itens: carrinho.map((i) => ({
+        nome: i.nome,
+        preco: i.preco,
+        quantidade: i.quantidade,
+      })),
+      total,
+      fechadoEm: new Date().toISOString(),
+      observacaoGeral: `WhatsApp - ${nome}${tipoEntrega === "entrega" ? ` | ${endereco}` : " | Retirada"}`,
+    });
+
     // Usar window.location.href como fallback para mobile
     const win = window.open(url, "_blank");
     if (!win) {
       window.location.href = url;
     }
+
+    // Limpar carrinho após envio
+    setCarrinho([]);
+    setNome("");
+    setEndereco("");
+    setObservacao("");
     
     toast.success("Pedido enviado para o WhatsApp!");
   };
