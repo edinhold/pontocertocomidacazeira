@@ -111,7 +111,7 @@ const Cozinha = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">Pedido #{pedido.id}</CardTitle>
-                  <Badge variant="outline">Mesa {pedido.mesa}</Badge>
+                  <Badge variant="outline">{pedido.mesa === 0 ? "📱 WhatsApp" : `Mesa ${pedido.mesa}`}</Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">{pedido.hora}</p>
               </CardHeader>
