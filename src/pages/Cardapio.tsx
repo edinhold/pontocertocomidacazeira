@@ -10,6 +10,7 @@ import { getPratos, type Prato } from "@/lib/pratosStore";
 import { getBebidas, type Bebida } from "@/lib/bebidasStore";
 import { getAdicionais, type Adicional } from "@/lib/adicionaisStore";
 import { registrarVenda } from "@/lib/vendasStore";
+import { adicionarPedido } from "@/lib/pedidosStore";
 import { useConfig } from "@/hooks/useConfig";
 import Logo from "@/components/Logo";
 
