@@ -35,6 +35,66 @@ export type Database = {
         }
         Relationships: []
       }
+      pedidos: {
+        Row: {
+          criado_em: string
+          hora: string
+          id: string
+          itens: Json
+          mesa: number
+          observacao_geral: string | null
+          status: string
+          total: number
+        }
+        Insert: {
+          criado_em?: string
+          hora?: string
+          id: string
+          itens?: Json
+          mesa?: number
+          observacao_geral?: string | null
+          status?: string
+          total?: number
+        }
+        Update: {
+          criado_em?: string
+          hora?: string
+          id?: string
+          itens?: Json
+          mesa?: number
+          observacao_geral?: string | null
+          status?: string
+          total?: number
+        }
+        Relationships: []
+      }
+      vendas: {
+        Row: {
+          fechado_em: string
+          id: string
+          itens: Json
+          mesa: number
+          observacao_geral: string | null
+          total: number
+        }
+        Insert: {
+          fechado_em?: string
+          id: string
+          itens?: Json
+          mesa?: number
+          observacao_geral?: string | null
+          total?: number
+        }
+        Update: {
+          fechado_em?: string
+          id?: string
+          itens?: Json
+          mesa?: number
+          observacao_geral?: string | null
+          total?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
