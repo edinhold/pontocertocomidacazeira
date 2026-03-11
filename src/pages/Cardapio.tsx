@@ -55,7 +55,10 @@ const Cardapio = () => {
   const total = subtotal + taxaEntrega;
 
   const enviarWhatsApp = () => {
-    if (!config.whatsapp) {
+    // Ler config fresca no momento do envio
+    const configAtual = getConfig();
+    
+    if (!configAtual.whatsapp) {
       toast.error("Restaurante ainda não configurou o WhatsApp. Tente novamente mais tarde.");
       return;
     }
@@ -73,7 +76,7 @@ const Cardapio = () => {
     }
 
     const linhas = [
-      `🍽️ *PEDIDO - ${config.nomeRestaurante}*`,
+      `🍽️ *PEDIDO - ${configAtual.nomeRestaurante}*`,
       "",
       `👤 *Nome:* ${nome}`,
       tipoEntrega === "entrega" ? `📍 *Endereço:* ${endereco}` : `🏪 *Retirada no local*`,
@@ -94,8 +97,15 @@ const Cardapio = () => {
     }
 
     const texto = encodeURIComponent(linhas.join("\n"));
-    const url = `https://wa.me/55${config.whatsapp}?text=${texto}`;
-    window.open(url, "_blank");
+    const numero = configAtual.whatsapp.replace(/\D/g, "");
+    const url = `https://wa.me/55${numero}?text=${texto}`;
+    
+    // Usar window.location.href como fallback para mobile
+    const win = window.open(url, "_blank");
+    if (!win) {
+      window.location.href = url;
+    }
+    
     toast.success("Pedido enviado para o WhatsApp!");
   };
 
