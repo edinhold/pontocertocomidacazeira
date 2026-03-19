@@ -15,7 +15,7 @@ const sizeMap = {
 const Logo = ({ size = "md", className }: LogoProps) => (
   <img
     src={logo}
-    alt="Ponto Certo - Comida Caseira"
+    alt="Brigadeiros dos Sonhos - Doceria"
     className={cn(sizeMap[size], className)}
   />
 );

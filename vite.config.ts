@@ -19,9 +19,9 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.png", "pwa-192x192.png", "pwa-512x512.png"],
       manifest: {
-        name: "Meu Cardápio Digital",
-        short_name: "Cardápio",
-        description: "Sistema de cardápio digital para restaurantes",
+        name: "Brigadeiros dos Sonhos - Doceria",
+        short_name: "Brigadeiros",
+        description: "Doceria - Brigadeiros dos Sonhos",
         theme_color: "#c2410c",
         background_color: "#f7f3f0",
         display: "standalone",
