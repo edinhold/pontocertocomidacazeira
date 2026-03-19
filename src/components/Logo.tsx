@@ -1,5 +1,6 @@
-import logo from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
+import { useLogo } from "@/hooks/useLogo";
+import defaultLogo from "@/assets/logo.png";
 
 interface LogoProps {
   size?: "sm" | "md" | "lg";
@@ -12,12 +13,19 @@ const sizeMap = {
   lg: "w-48 h-auto",
 };
 
-const Logo = ({ size = "md", className }: LogoProps) => (
-  <img
-    src={logo}
-    alt="Brigadeiros dos Sonhos - Doceria"
-    className={cn(sizeMap[size], className)}
-  />
-);
+const Logo = ({ size = "md", className }: LogoProps) => {
+  const { logoUrl } = useLogo();
+
+  return (
+    <img
+      src={logoUrl || defaultLogo}
+      alt="Brigadeiros dos Sonhos - Doceria"
+      className={cn(sizeMap[size], className)}
+      onError={(e) => {
+        (e.target as HTMLImageElement).src = defaultLogo;
+      }}
+    />
+  );
+};
 
 export default Logo;
