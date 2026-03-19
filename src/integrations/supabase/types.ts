@@ -65,6 +65,27 @@ export type Database = {
         }
         Relationships: []
       }
+      logo_alteracoes: {
+        Row: {
+          alterado_em: string
+          id: string
+          url_anterior: string | null
+          url_nova: string
+        }
+        Insert: {
+          alterado_em?: string
+          id?: string
+          url_anterior?: string | null
+          url_nova: string
+        }
+        Update: {
+          alterado_em?: string
+          id?: string
+          url_anterior?: string | null
+          url_nova?: string
+        }
+        Relationships: []
+      }
       pedidos: {
         Row: {
           criado_em: string
