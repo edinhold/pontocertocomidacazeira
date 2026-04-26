@@ -11,10 +11,18 @@ import { getPedidos } from "@/lib/pedidosStore";
 import { getMesas, salvarMesa, excluirMesa, type Mesa } from "@/lib/mesasStore";
 
 const Mesas = () => {
-  const [mesas, setMesas] = useState<Mesa[]>(getMesasSalvas());
+  const [mesas, setMesas] = useState<Mesa[]>([]);
+  const [loading, setLoading] = useState(true);
   const [mesasOcupadas, setMesasOcupadas] = useState<Set<number>>(new Set());
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ numero: "", capacidade: "" });
+
+  const loadMesas = useCallback(async () => {
+    setLoading(true);
+    const data = await getMesas();
+    setMesas(data);
+    setLoading(false);
+  }, []);
 
   const atualizarOcupacao = useCallback(async () => {
     const pedidos = await getPedidos();
@@ -23,29 +31,39 @@ const Mesas = () => {
   }, []);
 
   useEffect(() => {
+    loadMesas();
     atualizarOcupacao();
-    const interval = setInterval(atualizarOcupacao, 2000);
+    const interval = setInterval(() => {
+      atualizarOcupacao();
+    }, 5000);
     window.addEventListener("pedidos-updated", atualizarOcupacao);
     return () => {
       clearInterval(interval);
       window.removeEventListener("pedidos-updated", atualizarOcupacao);
     };
-  }, [atualizarOcupacao]);
+  }, [loadMesas, atualizarOcupacao]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.numero || !form.capacidade) { toast.error("Preencha todos os campos"); return; }
-    const novasMesas = [...mesas, { id: Date.now().toString(), numero: parseInt(form.numero), capacidade: parseInt(form.capacidade) }];
-    setMesas(novasMesas);
-    salvarMesas(novasMesas);
-    toast.success("Mesa adicionada!");
-    setOpen(false);
-    setForm({ numero: "", capacidade: "" });
+    try {
+      await salvarMesa({ numero: parseInt(form.numero), capacidade: parseInt(form.capacidade) });
+      toast.success("Mesa adicionada!");
+      setOpen(false);
+      setForm({ numero: "", capacidade: "" });
+      loadMesas();
+    } catch (err) {
+      toast.error("Erro ao salvar mesa");
+    }
   };
 
-  const handleExcluir = (id: string) => {
-    const novasMesas = mesas.filter((m) => m.id !== id);
-    setMesas(novasMesas);
-    salvarMesas(novasMesas);
+  const handleExcluir = async (id: string) => {
+    try {
+      await excluirMesa(id);
+      toast.success("Mesa removida");
+      loadMesas();
+    } catch (err) {
+      toast.error("Erro ao excluir mesa");
+    }
   };
 
   return (
