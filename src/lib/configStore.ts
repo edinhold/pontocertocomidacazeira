@@ -4,6 +4,10 @@ export interface ConfigLoja {
   whatsapp: string;
   taxaEntrega: number;
   nomeRestaurante: string;
+  corTema?: string;
+  corLetras?: string;
+  corBotoes?: string;
+  imagemFundo?: string;
 }
 
 const defaultConfig: ConfigLoja = {
