@@ -84,6 +84,9 @@ const Mesas = () => {
           </DialogContent>
         </Dialog>
       </div>
+      {loading ? (
+        <p className="text-center py-8 text-muted-foreground">Carregando mesas...</p>
+      ) : (
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {mesas.map((mesa) => {
           const ocupada = mesasOcupadas.has(mesa.numero);
