@@ -85,8 +85,22 @@ const Configuracoes = () => {
       toast.error("Informe o número do WhatsApp");
       return;
     }
-    await salvarConfigAsync(config);
-    toast.success("Configurações salvas com sucesso!");
+
+    setUploading(true);
+    try {
+      // Se tiver uma logo pendente, salva ela primeiro
+      if (previewFile) {
+        await uploadLogo(previewFile);
+        handleCancelUpload();
+      }
+
+      await salvarConfigAsync(config);
+      toast.success("Todas as configurações foram salvas com sucesso!");
+    } catch (error: any) {
+      toast.error("Erro ao salvar configurações: " + (error.message || "tente novamente"));
+    } finally {
+      setUploading(false);
+    }
   };
 
   const loadHistory = async () => {
