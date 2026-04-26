@@ -1,8 +1,10 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useTheme } from "@/hooks/useTheme";
 
 export const DynamicThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const { theme } = useTheme();
+  const location = useLocation();
 
   useEffect(() => {
     if (theme.corTema) {
