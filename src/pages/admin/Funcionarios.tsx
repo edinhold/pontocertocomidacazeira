@@ -108,6 +108,9 @@ const Funcionarios = () => {
       </div>
       <Card>
         <CardContent className="p-0">
+          {loading ? (
+            <p className="text-center py-8 text-muted-foreground">Carregando...</p>
+          ) : (
           <Table>
             <TableHeader>
               <TableRow>
