@@ -288,6 +288,12 @@ const Configuracoes = () => {
               onChange={(e) => setConfig({ ...config, nomeRestaurante: e.target.value })}
             />
           </div>
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={uploading} size="sm">
+              <Save className="size-4 mr-1" />
+              Salvar Nome
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
