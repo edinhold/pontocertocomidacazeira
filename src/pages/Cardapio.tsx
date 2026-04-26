@@ -221,7 +221,7 @@ const Cardapio = () => {
   const categoriasOrdenadas = [...new Set(pratos.map((p) => p.categoria))];
 
   return (
-    <div className="min-h-screen bg-muted">
+    <div className="min-h-screen bg-muted relative">
       {/* Header */}
       <header className="bg-primary text-primary-foreground py-6 px-4 text-center">
         <div className="max-w-2xl mx-auto">
@@ -324,61 +324,168 @@ const Cardapio = () => {
         )}
       </div>
 
-      {/* Carrinho fixo no rodapé */}
+      {/* Botão flutuante do Carrinho */}
       {carrinho.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-card border-t shadow-lg z-50">
-          <div className="max-w-2xl mx-auto p-4 space-y-3">
-            <div className="max-h-40 overflow-y-auto space-y-2">
-              {carrinho.map((item) => (
-                <div key={`${item.tipo}-${item.id}`} className="flex items-center justify-between text-sm">
-                  <span className="flex-1 truncate">{item.nome}</span>
-                  <div className="flex items-center gap-1">
-                    <Button variant="outline" size="icon" className="size-6" onClick={() => updateQty(item.id, item.tipo, -1)}>
-                      <Minus className="size-3" />
-                    </Button>
-                    <span className="w-6 text-center text-xs">{item.quantidade}</span>
-                    <Button variant="outline" size="icon" className="size-6" onClick={() => updateQty(item.id, item.tipo, 1)}>
-                      <Plus className="size-3" />
-                    </Button>
-                  </div>
-                  <span className="w-20 text-right font-medium">R$ {(item.preco * item.quantidade).toFixed(2)}</span>
+        <div className="fixed bottom-6 right-6 z-50">
+          <Sheet open={carrinhoAberto} onOpenChange={(open) => {
+            setCarrinhoAberto(open);
+            if (!open) setPasso("carrinho");
+          }}>
+            <SheetTrigger asChild>
+              <Button size="lg" className="rounded-full size-16 shadow-2xl relative bg-primary hover:bg-primary/90">
+                <ShoppingCart className="size-7" />
+                <Badge variant="destructive" className="absolute -top-2 -right-2 px-2 py-1 min-w-[24px] h-6 flex items-center justify-center text-xs font-bold rounded-full">
+                  {carrinho.reduce((sum, item) => sum + item.quantidade, 0)}
+                </Badge>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl sm:max-w-md mx-auto p-0 flex flex-col">
+              <SheetHeader className="p-4 border-b">
+                <div className="flex items-center justify-between">
+                  <SheetTitle className="flex items-center gap-2">
+                    {passo === "delivery" && (
+                      <Button variant="ghost" size="icon" onClick={() => setPasso("carrinho")} className="size-8">
+                        <ArrowLeft className="size-5" />
+                      </Button>
+                    )}
+                    {passo === "carrinho" ? "Meu Carrinho" : "Dados para Entrega"}
+                  </SheetTitle>
+                  <Button variant="ghost" size="icon" onClick={() => setCarrinhoAberto(false)} className="size-8">
+                    <X className="size-5" />
+                  </Button>
                 </div>
-              ))}
-            </div>
+              </SheetHeader>
 
-            <div className="flex gap-2">
-              <Button variant={tipoEntrega === "entrega" ? "default" : "outline"} size="sm" className="flex-1" onClick={() => setTipoEntrega("entrega")}>
-                <Truck className="size-4 mr-1" />Entrega
-              </Button>
-              <Button variant={tipoEntrega === "retirada" ? "default" : "outline"} size="sm" className="flex-1" onClick={() => setTipoEntrega("retirada")}>
-                🏪 Retirada
-              </Button>
-            </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                {passo === "carrinho" ? (
+                  <div className="space-y-4">
+                    {carrinho.map((item) => (
+                      <div key={`${item.tipo}-${item.id}`} className="flex items-center justify-between border-b pb-3">
+                        <div className="flex-1 min-w-0 mr-4">
+                          <p className="font-medium text-sm truncate">{item.nome}</p>
+                          <p className="text-xs text-muted-foreground">R$ {item.preco.toFixed(2)} cada</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 bg-muted rounded-full p-1">
+                            <Button variant="ghost" size="icon" className="size-7 rounded-full" onClick={() => updateQty(item.id, item.tipo, -1)}>
+                              <Minus className="size-3" />
+                            </Button>
+                            <span className="w-6 text-center text-sm font-medium">{item.quantidade}</span>
+                            <Button variant="ghost" size="icon" className="size-7 rounded-full" onClick={() => updateQty(item.id, item.tipo, 1)}>
+                              <Plus className="size-3" />
+                            </Button>
+                          </div>
+                          <p className="w-20 text-right font-semibold text-sm">
+                            R$ {(item.preco * item.quantidade).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <div className="pt-4 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Subtotal</span>
+                        <span>R$ {subtotal.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-lg font-bold border-t pt-2">
+                        <span>Total</span>
+                        <span className="text-primary">R$ {subtotal.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Como deseja receber?</label>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant={tipoEntrega === "entrega" ? "default" : "outline"} 
+                          className="flex-1 gap-2" 
+                          onClick={() => setTipoEntrega("entrega")}
+                        >
+                          <Truck className="size-4" /> Entrega
+                        </Button>
+                        <Button 
+                          variant={tipoEntrega === "retirada" ? "default" : "outline"} 
+                          className="flex-1 gap-2" 
+                          onClick={() => setTipoEntrega("retirada")}
+                        >
+                          🏪 Retirada
+                        </Button>
+                      </div>
+                    </div>
 
-            <Input placeholder="Seu nome *" value={nome} onChange={(e) => setNome(e.target.value)} className="text-sm" />
-            {tipoEntrega === "entrega" && (
-              <Input placeholder="Endereço de entrega *" value={endereco} onChange={(e) => setEndereco(e.target.value)} className="text-sm" />
-            )}
-            <Textarea placeholder="Observação (opcional)" value={observacao} onChange={(e) => setObservacao(e.target.value)} className="text-sm min-h-[40px]" />
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-muted-foreground">Nome completo *</label>
+                        <Input placeholder="Seu nome" value={nome} onChange={(e) => setNome(e.target.value)} />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-muted-foreground">WhatsApp *</label>
+                        <Input placeholder="(00) 00000-0000" type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
+                      </div>
+                      {tipoEntrega === "entrega" && (
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-muted-foreground">Endereço de entrega *</label>
+                          <Input placeholder="Rua, número, bairro, cidade" value={endereco} onChange={(e) => setEndereco(e.target.value)} />
+                        </div>
+                      )}
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-muted-foreground">Observação (opcional)</label>
+                        <Textarea 
+                          placeholder="Ex: Tirar cebola, ponto da carne, etc." 
+                          value={observacao} 
+                          onChange={(e) => setObservacao(e.target.value)}
+                          className="min-h-[80px]"
+                        />
+                      </div>
+                    </div>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Subtotal: R$ {subtotal.toFixed(2)}</p>
-                {tipoEntrega === "entrega" && taxaEntrega > 0 && (
-                  <p className="text-xs text-muted-foreground">Entrega: R$ {taxaEntrega.toFixed(2)}</p>
+                    <div className="pt-4 border-t space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Subtotal</span>
+                        <span>R$ {subtotal.toFixed(2)}</span>
+                      </div>
+                      {tipoEntrega === "entrega" && taxaEntrega > 0 && (
+                        <div className="flex justify-between text-sm text-green-600 font-medium">
+                          <span>Taxa de entrega</span>
+                          <span>+ R$ {taxaEntrega.toFixed(2)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-xl font-bold pt-2">
+                        <span>Total</span>
+                        <span className="text-primary">R$ {total.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
                 )}
-                <p className="font-bold text-lg">Total: R$ {total.toFixed(2)}</p>
               </div>
-              <Button onClick={enviarWhatsApp} size="lg" className="gap-2" disabled={enviando}>
-                <Send className="size-4" />
-                {enviando ? "Enviando..." : "Pedir via WhatsApp"}
-              </Button>
-            </div>
-          </div>
+
+              <SheetFooter className="p-4 border-t bg-background mt-auto">
+                {passo === "carrinho" ? (
+                  <Button className="w-full gap-2 h-12 text-lg" onClick={() => setPasso("delivery")}>
+                    Finalizar Pedido <ArrowRight className="size-5" />
+                  </Button>
+                ) : (
+                  <Button 
+                    className="w-full gap-2 h-12 text-lg bg-green-600 hover:bg-green-700" 
+                    onClick={enviarWhatsApp}
+                    disabled={enviando}
+                  >
+                    <Send className="size-5" />
+                    {enviando ? "Processando..." : "Enviar via WhatsApp"}
+                  </Button>
+                )}
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
         </div>
       )}
     </div>
   );
+};
+
+export default Cardapio;
 };
 
 export default Cardapio;
