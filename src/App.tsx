@@ -51,8 +51,8 @@ const App = () => (
           <Route path="/instalar" element={<Instalar />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </DynamicThemeProvider>
       </BrowserRouter>
-      </DynamicThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
