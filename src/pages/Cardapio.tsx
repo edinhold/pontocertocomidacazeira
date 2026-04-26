@@ -35,6 +35,19 @@ import { useConfig } from "@/hooks/useConfig";
 import { supabase } from "@/integrations/supabase/client";
 import Logo from "@/components/Logo";
 
+const isDark = (hex: string) => {
+  if (!hex) return true;
+  hex = hex.replace("#", "");
+  if (hex.length === 3) {
+    hex = hex.split('').map(char => char + char).join('');
+  }
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luma < 128;
+};
+
 interface CartItem {
   id: string;
   nome: string;
@@ -225,9 +238,18 @@ const Cardapio = () => {
   const categoriasOrdenadas = [...new Set(pratos.map((p) => p.categoria))];
 
   return (
-    <div className="min-h-screen bg-muted relative">
+    <div 
+      className={`min-h-screen ${config.imagemFundo ? 'bg-black/40' : 'bg-muted'} relative transition-colors duration-500`}
+      style={config.imagemFundo ? { backdropFilter: 'blur(2px)' } : {}}
+    >
       {/* Header */}
-      <header className="bg-primary text-primary-foreground py-6 px-4 text-center">
+      <header 
+        className="py-6 px-4 text-center transition-colors duration-500"
+        style={{ 
+          backgroundColor: config.corTema || 'hsl(var(--primary))', 
+          color: isDark(config.corTema || '#ea384c') ? '#fff' : '#000' 
+        }}
+      >
         <div className="max-w-2xl mx-auto">
           <Logo size="md" />
           <h1 className="text-2xl font-bold mt-2">{config.nomeRestaurante}</h1>

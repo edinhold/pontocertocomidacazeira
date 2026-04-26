@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { DynamicThemeProvider } from "./components/DynamicThemeProvider";
 import Login from "./pages/Login";
 import AdminLayout from "./layouts/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
@@ -26,10 +27,11 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
       <BrowserRouter>
-        <Routes>
+        <DynamicThemeProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
@@ -49,6 +51,7 @@ const App = () => (
           <Route path="/instalar" element={<Instalar />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </DynamicThemeProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

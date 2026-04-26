@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Save, Settings, ImagePlus, X, Upload, History } from "lucide-react";
+import { Save, Settings, ImagePlus, X, Upload, History, Palette, Type, Square } from "lucide-react";
 import { toast } from "sonner";
 import { getConfigAsync, salvarConfigAsync, type ConfigLoja } from "@/lib/configStore";
+import { useTheme, uploadThemeImage } from "@/hooks/useTheme";
 import { useLogo, uploadLogo } from "@/hooks/useLogo";
 import { supabase } from "@/integrations/supabase/client";
 import defaultLogo from "@/assets/logo.png";
@@ -17,6 +18,10 @@ const defaultConfig: ConfigLoja = {
   whatsapp: "",
   taxaEntrega: 0,
   nomeRestaurante: "Ponto Certo - Comida Caseira",
+  corTema: "#ea384c",
+  corLetras: "#000000",
+  corBotoes: "#ea384c",
+  imagemFundo: "",
 };
 
 const Configuracoes = () => {
@@ -27,10 +32,13 @@ const Configuracoes = () => {
   // Logo upload state
   const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [bgPreviewFile, setBgPreviewFile] = useState<File | null>(null);
+  const [bgPreviewUrl, setBgPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<Array<{ url_anterior: string | null; url_nova: string; alterado_em: string }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bgInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     getConfigAsync().then((c) => {
@@ -58,6 +66,33 @@ const Configuracoes = () => {
     setPreviewFile(file);
     setPreviewUrl(URL.createObjectURL(file));
     e.target.value = "";
+  };
+
+  const handleBgFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      toast.error("Formato inválido. Aceitos: JPG, PNG, SVG e WebP.");
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > MAX_SIZE) {
+      toast.error("Imagem muito grande. O tamanho máximo é 2MB.");
+      e.target.value = "";
+      return;
+    }
+
+    setBgPreviewFile(file);
+    setBgPreviewUrl(URL.createObjectURL(file));
+    e.target.value = "";
+  };
+
+  const handleCancelBgUpload = () => {
+    if (bgPreviewUrl) URL.revokeObjectURL(bgPreviewUrl);
+    setBgPreviewFile(null);
+    setBgPreviewUrl(null);
   };
 
   const handleCancelUpload = () => {
@@ -89,12 +124,20 @@ const Configuracoes = () => {
     setUploading(true);
     try {
       // Se tiver uma logo pendente, salva ela primeiro
+      let updatedConfig = { ...config };
       if (previewFile) {
         await uploadLogo(previewFile);
         handleCancelUpload();
       }
 
-      await salvarConfigAsync(config);
+      // Se tiver uma imagem de fundo pendente
+      if (bgPreviewFile) {
+        const bgUrl = await uploadThemeImage(bgPreviewFile, "imagem_fundo");
+        updatedConfig.imagemFundo = bgUrl;
+        handleCancelBgUpload();
+      }
+
+      await salvarConfigAsync(updatedConfig);
       toast.success("Todas as configurações foram salvas com sucesso!");
     } catch (error: any) {
       toast.error("Erro ao salvar configurações: " + (error.message || "tente novamente"));
@@ -220,6 +263,140 @@ const Configuracoes = () => {
               )}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Personalização do Tema Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="size-5" />
+            Personalização do Tema
+          </CardTitle>
+          <CardDescription>
+            Personalize as cores e o fundo do seu cardápio online.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Palette className="size-4" />
+                Cor do Tema
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  type="color"
+                  className="w-12 h-10 p-1 cursor-pointer"
+                  value={config.corTema || "#ea384c"}
+                  onChange={(e) => setConfig({ ...config, corTema: e.target.value })}
+                />
+                <Input
+                  type="text"
+                  value={config.corTema || "#ea384c"}
+                  onChange={(e) => setConfig({ ...config, corTema: e.target.value })}
+                  placeholder="#ea384c"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Type className="size-4" />
+                Cor das Letras
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  type="color"
+                  className="w-12 h-10 p-1 cursor-pointer"
+                  value={config.corLetras || "#000000"}
+                  onChange={(e) => setConfig({ ...config, corLetras: e.target.value })}
+                />
+                <Input
+                  type="text"
+                  value={config.corLetras || "#000000"}
+                  onChange={(e) => setConfig({ ...config, corLetras: e.target.value })}
+                  placeholder="#000000"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Square className="size-4" />
+                Cor dos Botões
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  type="color"
+                  className="w-12 h-10 p-1 cursor-pointer"
+                  value={config.corBotoes || "#ea384c"}
+                  onChange={(e) => setConfig({ ...config, corBotoes: e.target.value })}
+                />
+                <Input
+                  type="text"
+                  value={config.corBotoes || "#ea384c"}
+                  onChange={(e) => setConfig({ ...config, corBotoes: e.target.value })}
+                  placeholder="#ea384c"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-4 border-t">
+            <Label className="flex items-center gap-2">
+              <ImagePlus className="size-4" />
+              Imagem de Fundo do Cardápio
+            </Label>
+            
+            <input
+              ref={bgInputRef}
+              type="file"
+              accept=".jpg,.jpeg,.png,.svg,.webp"
+              className="hidden"
+              onChange={handleBgFileSelect}
+            />
+
+            <div className="flex flex-col gap-4">
+              {(bgPreviewUrl || config.imagemFundo) && (
+                <div className="w-full h-40 rounded-lg border bg-muted flex items-center justify-center overflow-hidden">
+                  <img
+                    src={bgPreviewUrl || config.imagemFundo}
+                    alt="Preview fundo"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => bgInputRef.current?.click()}
+                >
+                  <Upload className="size-4 mr-2" />
+                  {config.imagemFundo ? "Trocar Imagem de Fundo" : "Selecionar Imagem de Fundo"}
+                </Button>
+                
+                {(bgPreviewUrl || config.imagemFundo) && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive"
+                    onClick={() => {
+                      if (bgPreviewUrl) handleCancelBgUpload();
+                      else setConfig({ ...config, imagemFundo: "" });
+                    }}
+                  >
+                    <X className="size-4" />
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Recomendado: Imagens em alta resolução (1920x1080). Aceitos: JPG, PNG, SVG e WebP.
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

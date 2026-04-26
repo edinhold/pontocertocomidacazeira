@@ -4,6 +4,10 @@ export interface ConfigLoja {
   whatsapp: string;
   taxaEntrega: number;
   nomeRestaurante: string;
+  corTema?: string;
+  corLetras?: string;
+  corBotoes?: string;
+  imagemFundo?: string;
 }
 
 const defaultConfig: ConfigLoja = {
@@ -32,6 +36,10 @@ export async function getConfigAsync(): Promise<ConfigLoja> {
       if (row.chave === "whatsapp") config.whatsapp = row.valor;
       if (row.chave === "taxa_entrega") config.taxaEntrega = parseFloat(row.valor) || 0;
       if (row.chave === "nome_restaurante") config.nomeRestaurante = row.valor || defaultConfig.nomeRestaurante;
+      if (row.chave === "cor_tema") config.corTema = row.valor;
+      if (row.chave === "cor_letras") config.corLetras = row.valor;
+      if (row.chave === "cor_botoes") config.corBotoes = row.valor;
+      if (row.chave === "imagem_fundo") config.imagemFundo = row.valor;
     }
     return config;
   } catch {
@@ -65,6 +73,10 @@ export async function salvarConfigAsync(config: ConfigLoja) {
     { chave: "whatsapp", valor: config.whatsapp },
     { chave: "taxa_entrega", valor: config.taxaEntrega.toString() },
     { chave: "nome_restaurante", valor: config.nomeRestaurante },
+    ...(config.corTema ? [{ chave: "cor_tema", valor: config.corTema }] : []),
+    ...(config.corLetras ? [{ chave: "cor_letras", valor: config.corLetras }] : []),
+    ...(config.corBotoes ? [{ chave: "cor_botoes", valor: config.corBotoes }] : []),
+    ...(config.imagemFundo ? [{ chave: "imagem_fundo", valor: config.imagemFundo }] : []),
   ];
 
   const { error } = await supabase
