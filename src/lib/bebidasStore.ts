@@ -15,6 +15,8 @@ const defaultBebidas: Bebida[] = [
   { id: "2", nome: "Suco de Laranja", preco: 8.0, categoria: "Suco" },
 ];
 
+const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
 export async function getBebidas(): Promise<Bebida[]> {
   try {
     const { data, error } = await supabase
@@ -52,7 +54,7 @@ export async function salvarBebida(bebida: Omit<Bebida, "id"> & { id?: string })
   };
 
   let error;
-  if (bebida.id && !bebida.id.includes(".")) {
+  if (bebida.id && isUUID(bebida.id)) {
     const { error: err } = await supabase
       .from("bebidas")
       .update(data)
@@ -74,13 +76,16 @@ export async function salvarBebida(bebida: Omit<Bebida, "id"> & { id?: string })
 }
 
 export async function excluirBebida(id: string) {
-  const { error } = await supabase
-    .from("bebidas")
-    .delete()
-    .eq("id", id);
+  if (isUUID(id)) {
+    const { error } = await supabase
+      .from("bebidas")
+      .delete()
+      .eq("id", id);
 
-  if (error) {
-    console.error("Erro ao excluir bebida:", error);
+    if (error) {
+      console.error("Erro ao excluir bebida no banco:", error);
+      throw error;
+    }
   }
 
   const localData = localStorage.getItem(STORAGE_KEY);
