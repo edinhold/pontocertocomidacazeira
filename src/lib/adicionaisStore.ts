@@ -6,7 +6,7 @@ export interface Adicional {
 
 const STORAGE_KEY = "pontocerto_adicionais";
 
-export function getAdicionais(): Adicional[] {
+export async function getAdicionais(): Promise<Adicional[]> {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     return data ? JSON.parse(data) : [];
