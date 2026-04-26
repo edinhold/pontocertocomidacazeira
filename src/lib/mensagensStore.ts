@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export type Frequencia = "unica" | "diaria" | "semanal" | "mensal";
 
 export interface MensagemProgramada {
@@ -12,54 +14,77 @@ export interface MensagemProgramada {
   atualizadaEm: string;
 }
 
-const STORAGE_KEY = "pontocerto_mensagens_programadas";
-
-function ler(): MensagemProgramada[] {
-  try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch {
+export async function getMensagens(): Promise<MensagemProgramada[]> {
+  const { data, error } = await supabase
+    .from("mensagens_programadas")
+    .select("*")
+    .order("created_at", { ascending: false });
+  
+  if (error) {
+    console.error("Erro ao buscar mensagens:", error);
     return [];
   }
+  
+  return data.map(m => ({
+    id: m.id,
+    titulo: m.titulo,
+    conteudo: m.conteudo,
+    horario: m.horario,
+    frequencia: m.frequencia as Frequencia,
+    diasSemana: m.dias_semana || [],
+    ativa: m.ativa,
+    criadaEm: m.created_at,
+    atualizadaEm: m.updated_at
+  }));
 }
 
-function salvar(msgs: MensagemProgramada[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(msgs));
+export async function adicionarMensagem(msg: Omit<MensagemProgramada, "id" | "criadaEm" | "atualizadaEm">) {
+  const { error } = await supabase
+    .from("mensagens_programadas")
+    .insert([{
+      titulo: msg.titulo,
+      conteudo: msg.conteudo,
+      horario: msg.horario,
+      frequencia: msg.frequencia,
+      dias_semana: msg.diasSemana,
+      ativa: msg.ativa
+    }]);
+  
+  if (error) throw error;
 }
 
-export function getMensagens(): MensagemProgramada[] {
-  return ler();
+export async function atualizarMensagem(id: string, dados: Partial<Omit<MensagemProgramada, "id" | "criadaEm">>) {
+  const data: any = { ...dados };
+  if (dados.diasSemana) {
+    data.dias_semana = dados.diasSemana;
+    delete data.diasSemana;
+  }
+  data.updated_at = new Date().toISOString();
+
+  const { error } = await supabase
+    .from("mensagens_programadas")
+    .update(data)
+    .eq("id", id);
+  
+  if (error) throw error;
 }
 
-export function adicionarMensagem(msg: Omit<MensagemProgramada, "id" | "criadaEm" | "atualizadaEm">): MensagemProgramada {
-  const lista = ler();
-  const nova: MensagemProgramada = {
-    ...msg,
-    id: crypto.randomUUID(),
-    criadaEm: new Date().toISOString(),
-    atualizadaEm: new Date().toISOString(),
-  };
-  lista.push(nova);
-  salvar(lista);
-  return nova;
+export async function removerMensagem(id: string) {
+  const { error } = await supabase
+    .from("mensagens_programadas")
+    .delete()
+    .eq("id", id);
+  
+  if (error) throw error;
 }
 
-export function atualizarMensagem(id: string, dados: Partial<Omit<MensagemProgramada, "id" | "criadaEm">>): void {
-  const lista = ler().map((m) =>
-    m.id === id ? { ...m, ...dados, atualizadaEm: new Date().toISOString() } : m
-  );
-  salvar(lista);
-}
-
-export function removerMensagem(id: string): void {
-  salvar(ler().filter((m) => m.id !== id));
-}
-
-export function toggleMensagem(id: string): void {
-  const lista = ler().map((m) =>
-    m.id === id ? { ...m, ativa: !m.ativa, atualizadaEm: new Date().toISOString() } : m
-  );
-  salvar(lista);
+export async function toggleMensagem(id: string, ativa: boolean) {
+  const { error } = await supabase
+    .from("mensagens_programadas")
+    .update({ ativa, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  
+  if (error) throw error;
 }
 
 export const FREQUENCIA_LABELS: Record<Frequencia, string> = {
