@@ -8,31 +8,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { getPedidos } from "@/lib/pedidosStore";
-
-interface Mesa {
-  id: string;
-  numero: number;
-  capacidade: number;
-}
-
-const MESAS_KEY = "pontocerto_mesas";
-
-function getMesasSalvas(): Mesa[] {
-  try {
-    const data = localStorage.getItem(MESAS_KEY);
-    if (data) return JSON.parse(data);
-  } catch {}
-  return [
-    { id: "1", numero: 1, capacidade: 4 },
-    { id: "2", numero: 2, capacidade: 6 },
-    { id: "3", numero: 3, capacidade: 2 },
-    { id: "4", numero: 4, capacidade: 4 },
-  ];
-}
-
-function salvarMesas(mesas: Mesa[]) {
-  localStorage.setItem(MESAS_KEY, JSON.stringify(mesas));
-}
+import { getMesas, salvarMesa, excluirMesa, type Mesa } from "@/lib/mesasStore";
 
 const Mesas = () => {
   const [mesas, setMesas] = useState<Mesa[]>(getMesasSalvas());
