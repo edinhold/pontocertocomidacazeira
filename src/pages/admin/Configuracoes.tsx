@@ -262,6 +262,140 @@ const Configuracoes = () => {
         </CardContent>
       </Card>
 
+      {/* Personalização do Tema Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="size-5" />
+            Personalização do Tema
+          </CardTitle>
+          <CardDescription>
+            Personalize as cores e o fundo do seu cardápio online.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Palette className="size-4" />
+                Cor do Tema
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  type="color"
+                  className="w-12 h-10 p-1 cursor-pointer"
+                  value={config.corTema || "#ea384c"}
+                  onChange={(e) => setConfig({ ...config, corTema: e.target.value })}
+                />
+                <Input
+                  type="text"
+                  value={config.corTema || "#ea384c"}
+                  onChange={(e) => setConfig({ ...config, corTema: e.target.value })}
+                  placeholder="#ea384c"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Type className="size-4" />
+                Cor das Letras
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  type="color"
+                  className="w-12 h-10 p-1 cursor-pointer"
+                  value={config.corLetras || "#000000"}
+                  onChange={(e) => setConfig({ ...config, corLetras: e.target.value })}
+                />
+                <Input
+                  type="text"
+                  value={config.corLetras || "#000000"}
+                  onChange={(e) => setConfig({ ...config, corLetras: e.target.value })}
+                  placeholder="#000000"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Square className="size-4" />
+                Cor dos Botões
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  type="color"
+                  className="w-12 h-10 p-1 cursor-pointer"
+                  value={config.corBotoes || "#ea384c"}
+                  onChange={(e) => setConfig({ ...config, corBotoes: e.target.value })}
+                />
+                <Input
+                  type="text"
+                  value={config.corBotoes || "#ea384c"}
+                  onChange={(e) => setConfig({ ...config, corBotoes: e.target.value })}
+                  placeholder="#ea384c"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-4 border-t">
+            <Label className="flex items-center gap-2">
+              <ImagePlus className="size-4" />
+              Imagem de Fundo do Cardápio
+            </Label>
+            
+            <input
+              ref={bgInputRef}
+              type="file"
+              accept=".jpg,.jpeg,.png,.svg,.webp"
+              className="hidden"
+              onChange={handleBgFileSelect}
+            />
+
+            <div className="flex flex-col gap-4">
+              {(bgPreviewUrl || config.imagemFundo) && (
+                <div className="w-full h-40 rounded-lg border bg-muted flex items-center justify-center overflow-hidden">
+                  <img
+                    src={bgPreviewUrl || config.imagemFundo}
+                    alt="Preview fundo"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => bgInputRef.current?.click()}
+                >
+                  <Upload className="size-4 mr-2" />
+                  {config.imagemFundo ? "Trocar Imagem de Fundo" : "Selecionar Imagem de Fundo"}
+                </Button>
+                
+                {(bgPreviewUrl || config.imagemFundo) && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive"
+                    onClick={() => {
+                      if (bgPreviewUrl) handleCancelBgUpload();
+                      else setConfig({ ...config, imagemFundo: "" });
+                    }}
+                  >
+                    <X className="size-4" />
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Recomendado: Imagens em alta resolução (1920x1080). Aceitos: JPG, PNG, SVG e WebP.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>WhatsApp para Pedidos</CardTitle>
