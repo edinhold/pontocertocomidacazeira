@@ -19,6 +19,7 @@ export type Database = {
           ativo: boolean
           criado_em: string
           email: string
+          endereco: string | null
           id: string
           nome: string
           senha: string
@@ -28,6 +29,7 @@ export type Database = {
           ativo?: boolean
           criado_em?: string
           email: string
+          endereco?: string | null
           id?: string
           nome: string
           senha: string
@@ -37,6 +39,7 @@ export type Database = {
           ativo?: boolean
           criado_em?: string
           email?: string
+          endereco?: string | null
           id?: string
           nome?: string
           senha?: string
