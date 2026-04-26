@@ -284,7 +284,7 @@ const MensagensProgramadas = () => {
                     <TableCell>
                       <Switch
                         checked={m.ativa}
-                        onCheckedChange={() => handleToggle(m.id)}
+                        onCheckedChange={() => handleToggle(m.id, m.ativa)}
                       />
                     </TableCell>
                     <TableCell className="text-right">
