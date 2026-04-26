@@ -39,7 +39,20 @@ const Pedidos = () => {
 
     const channel = supabase
       .channel('admin-pedidos')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, () => recarregar())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pedidos' }, () => {
+        recarregar();
+        const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+        audio.play().catch(e => console.log("Áudio bloqueado pelo navegador até interação do usuário", e));
+        toast.success("Tem pedido novo!", {
+          description: "Um novo pedido acabou de chegar.",
+          duration: 10000,
+        });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, (payload) => {
+        if (payload.eventType !== 'INSERT') {
+          recarregar();
+        }
+      })
       .subscribe();
 
     return () => {
