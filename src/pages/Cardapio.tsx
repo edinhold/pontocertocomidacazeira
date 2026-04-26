@@ -114,6 +114,10 @@ const Cardapio = () => {
       toast.error("Informe seu nome");
       return;
     }
+    if (!whatsapp.trim()) {
+      toast.error("Informe seu WhatsApp");
+      return;
+    }
     if (tipoEntrega === "entrega" && !endereco.trim()) {
       toast.error("Informe o endereço de entrega");
       return;
@@ -125,6 +129,7 @@ const Cardapio = () => {
       `🍽️ *PEDIDO - ${config.nomeRestaurante}*`,
       "",
       `👤 *Nome:* ${nome}`,
+      `📱 *WhatsApp:* ${whatsapp}`,
       tipoEntrega === "entrega" ? `📍 *Endereço:* ${endereco}` : `🏪 *Retirada no local*`,
       "",
       "📋 *Itens do Pedido:*",
@@ -147,6 +152,21 @@ const Cardapio = () => {
     const url = `https://wa.me/55${numero}?text=${texto}`;
 
     try {
+      // Salvar informações no usuário se logado
+      const userStr = localStorage.getItem("pontocerto_user");
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user.tipo === "cliente") {
+          await supabase
+            .from("clientes")
+            .update({
+              nome: nome,
+              whatsapp: whatsapp,
+            })
+            .eq("id", user.id);
+        }
+      }
+
       // Registrar como venda do dia
       await registrarVenda({
         id: crypto.randomUUID(),
@@ -158,7 +178,7 @@ const Cardapio = () => {
         })),
         total,
         fechadoEm: new Date().toISOString(),
-        observacaoGeral: `WhatsApp - ${nome}${tipoEntrega === "entrega" ? ` | ${endereco}` : " | Retirada"}`,
+        observacaoGeral: `WhatsApp - ${nome} (${whatsapp})${tipoEntrega === "entrega" ? ` | ${endereco}` : " | Retirada"}`,
       });
 
       // Registrar como pedido para aparecer no painel de pedidos
@@ -177,7 +197,7 @@ const Cardapio = () => {
         status: "pendente",
         hora: agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
         criadoEm: agora.toISOString(),
-        observacaoGeral: `📱 WhatsApp - ${nome}${tipoEntrega === "entrega" ? ` | Entrega: ${endereco}` : " | Retirada"}`,
+        observacaoGeral: `📱 WhatsApp - ${nome} (${whatsapp})${tipoEntrega === "entrega" ? ` | Entrega: ${endereco}` : " | Retirada"}`,
       });
     } catch (err) {
       console.error("Erro ao registrar pedido:", err);
@@ -191,9 +211,8 @@ const Cardapio = () => {
 
     // Limpar carrinho após envio
     setCarrinho([]);
-    setNome("");
-    setEndereco("");
-    setObservacao("");
+    setPasso("carrinho");
+    setCarrinhoAberto(false);
     setEnviando(false);
 
     toast.success("Pedido enviado para o WhatsApp!");
