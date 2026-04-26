@@ -48,8 +48,7 @@ const Dashboard = () => {
     window.addEventListener("vendas-updated", loadData);
 
     const channel = supabase
-      .channel('dashboard')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, () => loadData())
+      .channel('dashboard-vendas')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'vendas' }, () => loadData())
       .subscribe();
 
