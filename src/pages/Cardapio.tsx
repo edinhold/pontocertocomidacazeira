@@ -165,6 +165,7 @@ const Cardapio = () => {
             .update({
               nome: nome,
               whatsapp: whatsapp,
+              endereco: endereco,
             })
             .eq("id", user.id);
         }
