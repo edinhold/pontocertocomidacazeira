@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Save, Settings, ImagePlus, X, Upload, History } from "lucide-react";
+import { Save, Settings, ImagePlus, X, Upload, History, Palette, Type, Square } from "lucide-react";
 import { toast } from "sonner";
 import { getConfigAsync, salvarConfigAsync, type ConfigLoja } from "@/lib/configStore";
 import { useLogo, uploadLogo } from "@/hooks/useLogo";
