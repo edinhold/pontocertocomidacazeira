@@ -37,40 +37,8 @@ const Pedidos = () => {
     recarregar();
     window.addEventListener("pedidos-updated", recarregar);
 
-    const playAlert = () => {
-      const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
-      audio.volume = 1.0;
-      audio.play().catch(e => console.log("Áudio bloqueado pelo navegador", e));
-      
-      // Tenta tocar um segundo som logo após para garantir que seja audível
-      setTimeout(() => {
-        const audio2 = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
-        audio2.volume = 1.0;
-        audio2.play().catch(() => {});
-      }, 1000);
-    };
-
-    const channel = supabase
-      .channel('admin-pedidos')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pedidos' }, () => {
-        recarregar();
-        playAlert();
-        toast.success("🚨 TEM PEDIDO NOVO!", {
-          description: "Um novo pedido chegou no sistema. Verifique a lista.",
-          duration: 15000,
-          position: "top-center",
-        });
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, (payload) => {
-        if (payload.eventType !== 'INSERT') {
-          recarregar();
-        }
-      })
-      .subscribe();
-
     return () => {
       window.removeEventListener("pedidos-updated", recarregar);
-      supabase.removeChannel(channel);
     };
   }, [recarregar]);
 
