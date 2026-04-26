@@ -39,7 +39,7 @@ export const DynamicThemeProvider = ({ children }: { children: React.ReactNode }
     } else {
       document.body.style.backgroundImage = "none";
     }
-  }, [theme, window.location.pathname]);
+  }, [theme, location.pathname]);
 
   return <>{children}</>;
 };
