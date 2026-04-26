@@ -34,6 +34,7 @@ import { adicionarPedido } from "@/lib/pedidosStore";
 import { useConfig } from "@/hooks/useConfig";
 import { supabase } from "@/integrations/supabase/client";
 import Logo from "@/components/Logo";
+import { formatWhatsAppUrl } from "@/lib/utils";
 
 const isDark = (hex: string) => {
   if (!hex) return true;
