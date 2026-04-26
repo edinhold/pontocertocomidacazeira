@@ -54,6 +54,16 @@ const MensagensProgramadas = () => {
     refresh();
   }, []);
 
+  const handleSendNow = (m: MensagemProgramada) => {
+    if (!config.whatsapp) {
+      toast.error("Configure o WhatsApp nas configurações primeiro");
+      return;
+    }
+    const url = formatWhatsAppUrl(config.whatsapp, m.conteudo);
+    window.open(url, "_blank");
+    toast.success("Abrindo WhatsApp...");
+  };
+
   const openNew = () => {
     setEditId(null);
     setForm(emptyForm);
@@ -73,32 +83,44 @@ const MensagensProgramadas = () => {
     setOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.titulo.trim()) return toast.error("Informe o título da mensagem");
     if (!form.conteudo.trim()) return toast.error("Informe o conteúdo da mensagem");
     if (form.frequencia === "semanal" && form.diasSemana.length === 0)
       return toast.error("Selecione ao menos um dia da semana");
 
-    if (editId) {
-      atualizarMensagem(editId, form);
-      toast.success("Mensagem atualizada!");
-    } else {
-      adicionarMensagem(form);
-      toast.success("Mensagem programada criada!");
+    try {
+      if (editId) {
+        await atualizarMensagem(editId, form);
+        toast.success("Mensagem atualizada!");
+      } else {
+        await adicionarMensagem(form);
+        toast.success("Mensagem programada criada!");
+      }
+      setOpen(false);
+      refresh();
+    } catch (err) {
+      toast.error("Erro ao salvar mensagem");
     }
-    setOpen(false);
-    refresh();
   };
 
-  const handleDelete = (id: string) => {
-    removerMensagem(id);
-    toast.success("Mensagem removida");
-    refresh();
+  const handleDelete = async (id: string) => {
+    try {
+      await removerMensagem(id);
+      toast.success("Mensagem removida");
+      refresh();
+    } catch (err) {
+      toast.error("Erro ao remover mensagem");
+    }
   };
 
-  const handleToggle = (id: string) => {
-    toggleMensagem(id);
-    refresh();
+  const handleToggle = async (id: string, atual: boolean) => {
+    try {
+      await toggleMensagem(id, !atual);
+      refresh();
+    } catch (err) {
+      toast.error("Erro ao alterar status");
+    }
   };
 
   const toggleDia = (dia: number) => {
