@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -10,16 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { adicionarPedido, type ItemPedido } from "@/lib/pedidosStore";
 import { getConfig } from "@/lib/configStore";
+import { getPratos, type Prato } from "@/lib/pratosStore";
+import { getBebidas, type Bebida } from "@/lib/bebidasStore";
 
-const mesas = [1, 2, 3, 4, 5, 6, 7, 8];
-const cardapio = [
-  { id: "1", nome: "Feijoada Completa", preco: 35.0, tipo: "prato" },
-  { id: "2", nome: "Frango à Parmegiana", preco: 28.0, tipo: "prato" },
-  { id: "3", nome: "Bife Acebolado", preco: 30.0, tipo: "prato" },
-  { id: "4", nome: "Coca-Cola 350ml", preco: 6.0, tipo: "bebida" },
-  { id: "5", nome: "Suco de Laranja", preco: 8.0, tipo: "bebida" },
-  { id: "6", nome: "Cerveja 600ml", preco: 12.0, tipo: "bebida" },
-];
+const mesas = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
 const Garcom = () => {
   const navigate = useNavigate();
