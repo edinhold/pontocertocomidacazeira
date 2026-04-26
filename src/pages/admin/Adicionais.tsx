@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { getAdicionais, salvarAdicionais, type Adicional } from "@/lib/adicionaisStore";
+import { getAdicionais, salvarAdicional, excluirAdicional, type Adicional } from "@/lib/adicionaisStore";
 
 const Adicionais = () => {
   const [adicionais, setAdicionais] = useState<Adicional[]>([]);
