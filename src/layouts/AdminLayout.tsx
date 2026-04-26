@@ -1,4 +1,7 @@
+import { useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import Logo from "@/components/Logo";
 import {
   Sidebar,
