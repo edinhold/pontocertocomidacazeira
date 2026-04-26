@@ -239,6 +239,12 @@ const Configuracoes = () => {
               Apenas números, sem espaços ou caracteres especiais. Ex: 11999999999
             </p>
           </div>
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={uploading} size="sm">
+              <Save className="size-4 mr-1" />
+              Salvar WhatsApp
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
