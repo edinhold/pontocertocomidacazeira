@@ -254,7 +254,7 @@ const Configuracoes = () => {
               step="0.01"
               min="0"
               placeholder="0.00"
-              value={config.taxaEntrega || ""}
+              value={config.taxaEntrega}
               onChange={(e) => setConfig({ ...config, taxaEntrega: parseFloat(e.target.value) || 0 })}
             />
             <p className="text-xs text-muted-foreground">
