@@ -10,7 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MessageSquare, Plus, Pencil, Trash2, Clock, CalendarDays } from "lucide-react";
+import { MessageSquare, Plus, Pencil, Trash2, Clock, CalendarDays, Send } from "lucide-react";
+import { formatWhatsAppUrl } from "@/lib/utils";
+import { useConfig } from "@/hooks/useConfig";
 import { toast } from "sonner";
 import {
   getMensagens,
