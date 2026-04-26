@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Save, Settings, ImagePlus, X, Upload, History, Palette, Type, Square } from "lucide-react";
 import { toast } from "sonner";
 import { getConfigAsync, salvarConfigAsync, type ConfigLoja } from "@/lib/configStore";
+import { useTheme, uploadThemeImage } from "@/hooks/useTheme";
 import { useLogo, uploadLogo } from "@/hooks/useLogo";
 import { supabase } from "@/integrations/supabase/client";
 import defaultLogo from "@/assets/logo.png";
