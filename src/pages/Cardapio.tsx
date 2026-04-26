@@ -183,9 +183,8 @@ const Cardapio = () => {
       linhas.push("", `📝 *Observação:* ${observacao}`);
     }
 
-    const texto = encodeURIComponent(linhas.join("\n"));
-    const numero = config.whatsapp.replace(/\D/g, "");
-    const url = `https://wa.me/55${numero}?text=${texto}`;
+    const texto = linhas.join("\n");
+    const url = formatWhatsAppUrl(config.whatsapp, texto);
 
     try {
       // Salvar informações no usuário se logado
