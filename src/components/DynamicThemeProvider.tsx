@@ -8,8 +8,8 @@ export const DynamicThemeProvider = ({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (theme.corTema) {
-      // Use theme color for accents and other elements if needed
-      // For now, let's also update --ring and some borders
+      document.documentElement.style.setProperty("--theme-bg", hexToHsl(theme.corTema));
+      document.documentElement.style.setProperty("--theme-foreground", isDark(theme.corTema) ? "0 0% 100%" : "0 0% 0%");
       document.documentElement.style.setProperty("--ring", hexToHsl(theme.corTema));
     }
     
