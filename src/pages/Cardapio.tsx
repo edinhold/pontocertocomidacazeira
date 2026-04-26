@@ -69,10 +69,13 @@ const Cardapio = () => {
         const fetchUserData = async () => {
           const { data } = await supabase
             .from("clientes")
-            .select("whatsapp")
+            .select("whatsapp, endereco")
             .eq("id", user.id)
             .single();
-          if (data) setWhatsapp(data.whatsapp || "");
+          if (data) {
+            setWhatsapp(data.whatsapp || "");
+            setEndereco(data.endereco || "");
+          }
         };
         fetchUserData();
       }
