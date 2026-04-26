@@ -6,14 +6,15 @@ export const DynamicThemeProvider = ({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (theme.corTema) {
-      document.documentElement.style.setProperty("--primary", hexToHsl(theme.corTema));
-      document.documentElement.style.setProperty("--primary-foreground", "0 0% 100%");
+      // Use theme color for accents and other elements if needed
+      // For now, let's also update --ring and some borders
+      document.documentElement.style.setProperty("--ring", hexToHsl(theme.corTema));
     }
     
     if (theme.corBotoes) {
-      // For buttons we can use primary as well if we want it to be the main color
-      // But let's see if we have specific button styles
-      // document.documentElement.style.setProperty("--button-color", theme.corBotoes);
+      // Primary color is mostly used for buttons in this template
+      document.documentElement.style.setProperty("--primary", hexToHsl(theme.corBotoes));
+      document.documentElement.style.setProperty("--primary-foreground", isDark(theme.corBotoes) ? "0 0% 100%" : "0 0% 0%");
     }
 
     if (theme.corLetras) {
@@ -21,23 +22,36 @@ export const DynamicThemeProvider = ({ children }: { children: React.ReactNode }
     }
 
     if (theme.imagemFundo) {
-      document.body.style.backgroundImage = `url(${theme.imagemFundo})`;
-      document.body.style.backgroundSize = "cover";
-      document.body.style.backgroundAttachment = "fixed";
-      document.body.style.backgroundPosition = "center";
+      // Apply background only to public pages or everywhere?
+      // Let's check if we are on cardapio page
+      const isCardapio = window.location.pathname === "/cardapio";
+      if (isCardapio) {
+        document.body.style.backgroundImage = `url(${theme.imagemFundo})`;
+        document.body.style.backgroundSize = "cover";
+        document.body.style.backgroundAttachment = "fixed";
+        document.body.style.backgroundPosition = "center";
+        document.body.style.backgroundColor = "transparent";
+      } else {
+        document.body.style.backgroundImage = "none";
+      }
     } else {
       document.body.style.backgroundImage = "none";
     }
-  }, [theme]);
+  }, [theme, window.location.pathname]);
 
   return <>{children}</>;
 };
 
 // Helper function to convert hex to HSL for Tailwind variables
 function hexToHsl(hex: string): string {
+  if (!hex) return "0 0% 0%";
   // Remove # if present
   hex = hex.replace("#", "");
   
+  if (hex.length === 3) {
+    hex = hex.split('').map(char => char + char).join('');
+  }
+
   // Convert hex to RGB
   const r = parseInt(hex.substring(0, 2), 16) / 255;
   const g = parseInt(hex.substring(2, 4), 16) / 255;
@@ -60,4 +74,18 @@ function hexToHsl(hex: string): string {
   }
 
   return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
+
+function isDark(hex: string): boolean {
+  if (!hex) return true;
+  hex = hex.replace("#", "");
+  if (hex.length === 3) {
+    hex = hex.split('').map(char => char + char).join('');
+  }
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  // Luma formula
+  const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luma < 128;
 }
