@@ -19,11 +19,22 @@ const Garcom = () => {
   const navigate = useNavigate();
   const [mesaSelecionada, setMesaSelecionada] = useState("");
   const [itens, setItens] = useState<ItemPedido[]>([]);
+  const [pratos, setPratos] = useState<Prato[]>([]);
+  const [bebidas, setBebidas] = useState<Bebida[]>([]);
   const [observacaoAberta, setObservacaoAberta] = useState<string | null>(null);
   const [observacaoGeral, setObservacaoGeral] = useState("");
   const [enviando, setEnviando] = useState(false);
 
-  const addItem = (item: typeof cardapio[0]) => {
+  useEffect(() => {
+    const loadData = async () => {
+      const [p, b] = await Promise.all([getPratos(), getBebidas()]);
+      setPratos(p.filter(item => item.disponivel));
+      setBebidas(b);
+    };
+    loadData();
+  }, []);
+
+  const addItem = (item: { id: string, nome: string, preco: number }) => {
     setItens((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) return prev.map((i) => (i.id === item.id ? { ...i, quantidade: i.quantidade + 1 } : i));
