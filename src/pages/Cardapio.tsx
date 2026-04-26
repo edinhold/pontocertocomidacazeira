@@ -35,6 +35,19 @@ import { useConfig } from "@/hooks/useConfig";
 import { supabase } from "@/integrations/supabase/client";
 import Logo from "@/components/Logo";
 
+const isDark = (hex: string) => {
+  if (!hex) return true;
+  hex = hex.replace("#", "");
+  if (hex.length === 3) {
+    hex = hex.split('').map(char => char + char).join('');
+  }
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luma < 128;
+};
+
 interface CartItem {
   id: string;
   nome: string;
