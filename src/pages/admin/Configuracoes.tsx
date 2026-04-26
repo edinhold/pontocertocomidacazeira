@@ -177,9 +177,9 @@ const Configuracoes = () => {
                     {previewFile?.name} ({((previewFile?.size || 0) / 1024).toFixed(0)} KB)
                   </p>
                   <div className="flex gap-2">
-                    <Button onClick={handleConfirmUpload} disabled={uploading} size="sm">
+                    <Button onClick={handleSave} disabled={uploading} size="sm">
                       <Upload className="size-4 mr-1" />
-                      {uploading ? "Enviando..." : "Confirmar"}
+                      {uploading ? "Salvando..." : "Confirmar Alteração"}
                     </Button>
                     <Button onClick={handleCancelUpload} variant="outline" size="sm" disabled={uploading}>
                       <X className="size-4 mr-1" />
