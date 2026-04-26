@@ -22,15 +22,17 @@ const Garcom = () => {
   const [itens, setItens] = useState<ItemPedido[]>([]);
   const [pratos, setPratos] = useState<Prato[]>([]);
   const [bebidas, setBebidas] = useState<Bebida[]>([]);
+  const [mesas, setMesas] = useState<Mesa[]>([]);
   const [observacaoAberta, setObservacaoAberta] = useState<string | null>(null);
   const [observacaoGeral, setObservacaoGeral] = useState("");
   const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
-      const [p, b] = await Promise.all([getPratos(), getBebidas()]);
+      const [p, b, m] = await Promise.all([getPratos(), getBebidas(), getMesas()]);
       setPratos(p.filter(item => item.disponivel));
       setBebidas(b);
+      setMesas(m);
     };
     loadData();
   }, []);
