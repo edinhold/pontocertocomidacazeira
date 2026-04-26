@@ -37,8 +37,17 @@ const Pedidos = () => {
     recarregar();
     window.addEventListener("pedidos-updated", recarregar);
 
+    // Realtime subscription
+    const channel = supabase
+      .channel('admin-pedidos-page')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, () => {
+        recarregar();
+      })
+      .subscribe();
+
     return () => {
       window.removeEventListener("pedidos-updated", recarregar);
+      supabase.removeChannel(channel);
     };
   }, [recarregar]);
 

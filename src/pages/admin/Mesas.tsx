@@ -8,37 +8,21 @@ import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { getPedidos } from "@/lib/pedidosStore";
-
-interface Mesa {
-  id: string;
-  numero: number;
-  capacidade: number;
-}
-
-const MESAS_KEY = "pontocerto_mesas";
-
-function getMesasSalvas(): Mesa[] {
-  try {
-    const data = localStorage.getItem(MESAS_KEY);
-    if (data) return JSON.parse(data);
-  } catch {}
-  return [
-    { id: "1", numero: 1, capacidade: 4 },
-    { id: "2", numero: 2, capacidade: 6 },
-    { id: "3", numero: 3, capacidade: 2 },
-    { id: "4", numero: 4, capacidade: 4 },
-  ];
-}
-
-function salvarMesas(mesas: Mesa[]) {
-  localStorage.setItem(MESAS_KEY, JSON.stringify(mesas));
-}
+import { getMesas, salvarMesa, excluirMesa, type Mesa } from "@/lib/mesasStore";
 
 const Mesas = () => {
-  const [mesas, setMesas] = useState<Mesa[]>(getMesasSalvas());
+  const [mesas, setMesas] = useState<Mesa[]>([]);
+  const [loading, setLoading] = useState(true);
   const [mesasOcupadas, setMesasOcupadas] = useState<Set<number>>(new Set());
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ numero: "", capacidade: "" });
+
+  const loadMesas = useCallback(async () => {
+    setLoading(true);
+    const data = await getMesas();
+    setMesas(data);
+    setLoading(false);
+  }, []);
 
   const atualizarOcupacao = useCallback(async () => {
     const pedidos = await getPedidos();
@@ -47,29 +31,39 @@ const Mesas = () => {
   }, []);
 
   useEffect(() => {
+    loadMesas();
     atualizarOcupacao();
-    const interval = setInterval(atualizarOcupacao, 2000);
+    const interval = setInterval(() => {
+      atualizarOcupacao();
+    }, 5000);
     window.addEventListener("pedidos-updated", atualizarOcupacao);
     return () => {
       clearInterval(interval);
       window.removeEventListener("pedidos-updated", atualizarOcupacao);
     };
-  }, [atualizarOcupacao]);
+  }, [loadMesas, atualizarOcupacao]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.numero || !form.capacidade) { toast.error("Preencha todos os campos"); return; }
-    const novasMesas = [...mesas, { id: Date.now().toString(), numero: parseInt(form.numero), capacidade: parseInt(form.capacidade) }];
-    setMesas(novasMesas);
-    salvarMesas(novasMesas);
-    toast.success("Mesa adicionada!");
-    setOpen(false);
-    setForm({ numero: "", capacidade: "" });
+    try {
+      await salvarMesa({ numero: parseInt(form.numero), capacidade: parseInt(form.capacidade) });
+      toast.success("Mesa adicionada!");
+      setOpen(false);
+      setForm({ numero: "", capacidade: "" });
+      loadMesas();
+    } catch (err) {
+      toast.error("Erro ao salvar mesa");
+    }
   };
 
-  const handleExcluir = (id: string) => {
-    const novasMesas = mesas.filter((m) => m.id !== id);
-    setMesas(novasMesas);
-    salvarMesas(novasMesas);
+  const handleExcluir = async (id: string) => {
+    try {
+      await excluirMesa(id);
+      toast.success("Mesa removida");
+      loadMesas();
+    } catch (err) {
+      toast.error("Erro ao excluir mesa");
+    }
   };
 
   return (
@@ -90,6 +84,9 @@ const Mesas = () => {
           </DialogContent>
         </Dialog>
       </div>
+      {loading ? (
+        <p className="text-center py-8 text-muted-foreground">Carregando mesas...</p>
+      ) : (
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {mesas.map((mesa) => {
           const ocupada = mesasOcupadas.has(mesa.numero);
@@ -111,6 +108,7 @@ const Mesas = () => {
           );
         })}
       </div>
+      )}
     </div>
   );
 };

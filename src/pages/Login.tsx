@@ -29,7 +29,7 @@ const Login = () => {
     }
 
     // Tenta autenticar como funcionário
-    const funcionario = autenticar(loginEmail, loginPassword);
+    const funcionario = await autenticar(loginEmail, loginPassword);
     if (funcionario) {
       localStorage.setItem("pontocerto_user", JSON.stringify({ id: funcionario.id, nome: funcionario.nome, cargo: funcionario.cargo }));
       navigate(getCargoRoute(funcionario.cargo));

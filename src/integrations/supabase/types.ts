@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      adicionais: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+          preco: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+          preco: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+          preco?: number
+        }
+        Relationships: []
+      }
       bebidas: {
         Row: {
           categoria: string
@@ -98,6 +119,33 @@ export type Database = {
         }
         Relationships: []
       }
+      funcionarios: {
+        Row: {
+          cargo: string
+          created_at: string
+          email: string
+          id: string
+          nome: string
+          senha: string
+        }
+        Insert: {
+          cargo: string
+          created_at?: string
+          email: string
+          id?: string
+          nome: string
+          senha: string
+        }
+        Update: {
+          cargo?: string
+          created_at?: string
+          email?: string
+          id?: string
+          nome?: string
+          senha?: string
+        }
+        Relationships: []
+      }
       logo_alteracoes: {
         Row: {
           alterado_em: string
@@ -116,6 +164,63 @@ export type Database = {
           id?: string
           url_anterior?: string | null
           url_nova?: string
+        }
+        Relationships: []
+      }
+      mensagens_programadas: {
+        Row: {
+          ativa: boolean
+          conteudo: string
+          created_at: string
+          dias_semana: number[] | null
+          frequencia: string
+          horario: string
+          id: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          ativa?: boolean
+          conteudo: string
+          created_at?: string
+          dias_semana?: number[] | null
+          frequencia: string
+          horario: string
+          id?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          ativa?: boolean
+          conteudo?: string
+          created_at?: string
+          dias_semana?: number[] | null
+          frequencia?: string
+          horario?: string
+          id?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mesas: {
+        Row: {
+          capacidade: number
+          created_at: string
+          id: string
+          numero: number
+        }
+        Insert: {
+          capacidade?: number
+          created_at?: string
+          id?: string
+          numero: number
+        }
+        Update: {
+          capacidade?: number
+          created_at?: string
+          id?: string
+          numero?: number
         }
         Relationships: []
       }

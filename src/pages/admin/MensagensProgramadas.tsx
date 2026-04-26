@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MessageSquare, Plus, Pencil, Trash2, Clock, CalendarDays } from "lucide-react";
+import { MessageSquare, Plus, Pencil, Trash2, Clock, CalendarDays, Send } from "lucide-react";
+import { formatWhatsAppUrl } from "@/lib/utils";
+import { useConfig } from "@/hooks/useConfig";
 import { toast } from "sonner";
 import {
   getMensagens,
@@ -34,12 +36,33 @@ const emptyForm = {
 };
 
 const MensagensProgramadas = () => {
-  const [mensagens, setMensagens] = useState<MensagemProgramada[]>(getMensagens());
+  const { config } = useConfig();
+  const [mensagens, setMensagens] = useState<MensagemProgramada[]>([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
-  const refresh = () => setMensagens(getMensagens());
+  const refresh = async () => {
+    setLoading(true);
+    const data = await getMensagens();
+    setMensagens(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  const handleSendNow = (m: MensagemProgramada) => {
+    if (!config.whatsapp) {
+      toast.error("Configure o WhatsApp nas configurações primeiro");
+      return;
+    }
+    const url = formatWhatsAppUrl(config.whatsapp, m.conteudo);
+    window.open(url, "_blank");
+    toast.success("Abrindo WhatsApp...");
+  };
 
   const openNew = () => {
     setEditId(null);
@@ -60,32 +83,44 @@ const MensagensProgramadas = () => {
     setOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.titulo.trim()) return toast.error("Informe o título da mensagem");
     if (!form.conteudo.trim()) return toast.error("Informe o conteúdo da mensagem");
     if (form.frequencia === "semanal" && form.diasSemana.length === 0)
       return toast.error("Selecione ao menos um dia da semana");
 
-    if (editId) {
-      atualizarMensagem(editId, form);
-      toast.success("Mensagem atualizada!");
-    } else {
-      adicionarMensagem(form);
-      toast.success("Mensagem programada criada!");
+    try {
+      if (editId) {
+        await atualizarMensagem(editId, form);
+        toast.success("Mensagem atualizada!");
+      } else {
+        await adicionarMensagem(form);
+        toast.success("Mensagem programada criada!");
+      }
+      setOpen(false);
+      refresh();
+    } catch (err) {
+      toast.error("Erro ao salvar mensagem");
     }
-    setOpen(false);
-    refresh();
   };
 
-  const handleDelete = (id: string) => {
-    removerMensagem(id);
-    toast.success("Mensagem removida");
-    refresh();
+  const handleDelete = async (id: string) => {
+    try {
+      await removerMensagem(id);
+      toast.success("Mensagem removida");
+      refresh();
+    } catch (err) {
+      toast.error("Erro ao remover mensagem");
+    }
   };
 
-  const handleToggle = (id: string) => {
-    toggleMensagem(id);
-    refresh();
+  const handleToggle = async (id: string, atual: boolean) => {
+    try {
+      await toggleMensagem(id, !atual);
+      refresh();
+    } catch (err) {
+      toast.error("Erro ao alterar status");
+    }
   };
 
   const toggleDia = (dia: number) => {
@@ -249,11 +284,14 @@ const MensagensProgramadas = () => {
                     <TableCell>
                       <Switch
                         checked={m.ativa}
-                        onCheckedChange={() => handleToggle(m.id)}
+                        onCheckedChange={() => handleToggle(m.id, m.ativa)}
                       />
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => handleSendNow(m)} title="Enviar agora">
+                          <Send className="size-4 text-primary" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => openEdit(m)}>
                           <Pencil className="size-4" />
                         </Button>

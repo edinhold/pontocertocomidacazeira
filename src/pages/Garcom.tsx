@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -10,26 +10,34 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { adicionarPedido, type ItemPedido } from "@/lib/pedidosStore";
 import { getConfig } from "@/lib/configStore";
+import { getPratos, type Prato } from "@/lib/pratosStore";
+import { getBebidas, type Bebida } from "@/lib/bebidasStore";
+import { formatWhatsAppUrl } from "@/lib/utils";
 
-const mesas = [1, 2, 3, 4, 5, 6, 7, 8];
-const cardapio = [
-  { id: "1", nome: "Feijoada Completa", preco: 35.0, tipo: "prato" },
-  { id: "2", nome: "Frango à Parmegiana", preco: 28.0, tipo: "prato" },
-  { id: "3", nome: "Bife Acebolado", preco: 30.0, tipo: "prato" },
-  { id: "4", nome: "Coca-Cola 350ml", preco: 6.0, tipo: "bebida" },
-  { id: "5", nome: "Suco de Laranja", preco: 8.0, tipo: "bebida" },
-  { id: "6", nome: "Cerveja 600ml", preco: 12.0, tipo: "bebida" },
-];
+import { getMesas, type Mesa } from "@/lib/mesasStore";
 
 const Garcom = () => {
   const navigate = useNavigate();
   const [mesaSelecionada, setMesaSelecionada] = useState("");
   const [itens, setItens] = useState<ItemPedido[]>([]);
+  const [pratos, setPratos] = useState<Prato[]>([]);
+  const [bebidas, setBebidas] = useState<Bebida[]>([]);
+  const [mesas, setMesas] = useState<Mesa[]>([]);
   const [observacaoAberta, setObservacaoAberta] = useState<string | null>(null);
   const [observacaoGeral, setObservacaoGeral] = useState("");
   const [enviando, setEnviando] = useState(false);
 
-  const addItem = (item: typeof cardapio[0]) => {
+  useEffect(() => {
+    const loadData = async () => {
+      const [p, b, m] = await Promise.all([getPratos(), getBebidas(), getMesas()]);
+      setPratos(p.filter(item => item.disponivel));
+      setBebidas(b);
+      setMesas(m);
+    };
+    loadData();
+  }, []);
+
+  const addItem = (item: { id: string, nome: string, preco: number }) => {
     setItens((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) return prev.map((i) => (i.id === item.id ? { ...i, quantidade: i.quantidade + 1 } : i));
@@ -84,8 +92,9 @@ const Garcom = () => {
       if (pedido.observacaoGeral) {
         linhas.push("", `📝 *Observação:* ${pedido.observacaoGeral}`);
       }
-      const texto = encodeURIComponent(linhas.join("\n"));
-      window.open(`https://wa.me/55${config.whatsapp}?text=${texto}`, "_blank");
+      const texto = linhas.join("\n");
+      const url = formatWhatsAppUrl(config.whatsapp, texto);
+      window.open(url, "_blank");
     }
 
     toast.success(`Pedido enviado para a cozinha! Mesa ${mesaSelecionada}`);
@@ -111,7 +120,7 @@ const Garcom = () => {
             <CardContent>
               <Select value={mesaSelecionada} onValueChange={setMesaSelecionada}>
                 <SelectTrigger><SelectValue placeholder="Selecione a mesa" /></SelectTrigger>
-                <SelectContent>{mesas.map((m) => <SelectItem key={m} value={m.toString()}>Mesa {m}</SelectItem>)}</SelectContent>
+                <SelectContent>{mesas.map((m) => <SelectItem key={m.id} value={m.numero.toString()}>Mesa {m.numero}</SelectItem>)}</SelectContent>
               </Select>
             </CardContent>
           </Card>
@@ -119,14 +128,14 @@ const Garcom = () => {
             <CardHeader className="pb-2"><CardTitle className="text-lg">Cardápio</CardTitle></CardHeader>
             <CardContent className="space-y-2">
               <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">Pratos</p>
-              {cardapio.filter((i) => i.tipo === "prato").map((item) => (
+              {pratos.map((item) => (
                 <Button key={item.id} variant="outline" className="w-full justify-between" onClick={() => addItem(item)}>
                   <span>{item.nome}</span>
                   <span className="text-muted-foreground">R$ {item.preco.toFixed(2)}</span>
                 </Button>
               ))}
               <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide pt-2">Bebidas</p>
-              {cardapio.filter((i) => i.tipo === "bebida").map((item) => (
+              {bebidas.map((item) => (
                 <Button key={item.id} variant="outline" className="w-full justify-between" onClick={() => addItem(item)}>
                   <span>{item.nome}</span>
                   <span className="text-muted-foreground">R$ {item.preco.toFixed(2)}</span>
