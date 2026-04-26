@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,33 +9,52 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { getBebidas, salvarBebidas, type Bebida } from "@/lib/bebidasStore";
+import { getBebidas, salvarBebida, excluirBebida, type Bebida } from "@/lib/bebidasStore";
 import ImageUpload from "@/components/ImageUpload";
 
 const categorias = ["Refrigerante", "Suco", "Cerveja", "Água", "Drink", "Vinho"];
 
 const Bebidas = () => {
-  const [bebidas, setBebidas] = useState<Bebida[]>(getBebidas());
+  const [bebidas, setBebidas] = useState<Bebida[]>([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ nome: "", preco: "", categoria: "", imagem: undefined as string | undefined });
 
+  const loadBebidas = async () => {
+    setLoading(true);
+    const data = await getBebidas();
+    setBebidas(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadBebidas();
+    const handleUpdate = () => loadBebidas();
+    window.addEventListener("bebidas-updated", handleUpdate);
+    return () => window.removeEventListener("bebidas-updated", handleUpdate);
+  }, []);
+
   const resetForm = () => { setForm({ nome: "", preco: "", categoria: "", imagem: undefined }); setEditingId(null); };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.nome || !form.preco || !form.categoria) { toast.error("Preencha todos os campos"); return; }
-    let updated: Bebida[];
-    if (editingId) {
-      updated = bebidas.map((b) => (b.id === editingId ? { ...b, nome: form.nome, preco: parseFloat(form.preco), categoria: form.categoria, imagem: form.imagem } : b));
-      toast.success("Bebida atualizada!");
-    } else {
-      updated = [...bebidas, { id: Date.now().toString(), nome: form.nome, preco: parseFloat(form.preco), categoria: form.categoria, imagem: form.imagem }];
-      toast.success("Bebida adicionada!");
+    
+    try {
+      await salvarBebida({
+        id: editingId || undefined,
+        nome: form.nome,
+        preco: parseFloat(form.preco),
+        categoria: form.categoria,
+        imagem: form.imagem
+      });
+      
+      toast.success(editingId ? "Bebida atualizada!" : "Bebida adicionada!");
+      setOpen(false);
+      resetForm();
+    } catch (err) {
+      toast.error("Erro ao salvar bebida");
     }
-    setBebidas(updated);
-    salvarBebidas(updated);
-    setOpen(false);
-    resetForm();
   };
 
   const handleEdit = (bebida: Bebida) => {
@@ -44,11 +63,13 @@ const Bebidas = () => {
     setOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    const updated = bebidas.filter((b) => b.id !== id);
-    setBebidas(updated);
-    salvarBebidas(updated);
-    toast.success("Bebida removida!");
+  const handleDelete = async (id: string) => {
+    try {
+      await excluirBebida(id);
+      toast.success("Bebida removida!");
+    } catch (err) {
+      toast.error("Erro ao excluir bebida");
+    }
   };
 
   return (
@@ -90,7 +111,15 @@ const Bebidas = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {bebidas.map((b) => (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Carregando bebidas...</TableCell>
+                </TableRow>
+              ) : bebidas.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhuma bebida encontrada.</TableCell>
+                </TableRow>
+              ) : bebidas.map((b) => (
                 <TableRow key={b.id}>
                   <TableCell>
                     {b.imagem ? (
