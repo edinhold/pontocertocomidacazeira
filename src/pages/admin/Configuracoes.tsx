@@ -120,12 +120,20 @@ const Configuracoes = () => {
     setUploading(true);
     try {
       // Se tiver uma logo pendente, salva ela primeiro
+      let updatedConfig = { ...config };
       if (previewFile) {
         await uploadLogo(previewFile);
         handleCancelUpload();
       }
 
-      await salvarConfigAsync(config);
+      // Se tiver uma imagem de fundo pendente
+      if (bgPreviewFile) {
+        const bgUrl = await uploadThemeImage(bgPreviewFile, "imagem_fundo");
+        updatedConfig.imagemFundo = bgUrl;
+        handleCancelBgUpload();
+      }
+
+      await salvarConfigAsync(updatedConfig);
       toast.success("Todas as configurações foram salvas com sucesso!");
     } catch (error: any) {
       toast.error("Erro ao salvar configurações: " + (error.message || "tente novamente"));
