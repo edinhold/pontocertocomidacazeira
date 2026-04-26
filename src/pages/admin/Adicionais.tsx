@@ -11,10 +11,22 @@ import { toast } from "sonner";
 import { getAdicionais, salvarAdicionais, type Adicional } from "@/lib/adicionaisStore";
 
 const Adicionais = () => {
-  const [adicionais, setAdicionais] = useState<Adicional[]>(getAdicionais());
+  const [adicionais, setAdicionais] = useState<Adicional[]>([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ nome: "", preco: "" });
+
+  const loadAdicionais = async () => {
+    setLoading(true);
+    const data = await getAdicionais();
+    setAdicionais(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadAdicionais();
+  }, []);
 
   const resetForm = () => { setForm({ nome: "", preco: "" }); setEditingId(null); };
 
@@ -63,7 +75,9 @@ const Adicionais = () => {
       </div>
       <Card>
         <CardContent className="p-0">
-          {adicionais.length === 0 ? (
+          {loading ? (
+            <p className="text-muted-foreground text-center py-8">Carregando...</p>
+          ) : adicionais.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">Nenhum adicional cadastrado.</p>
           ) : (
             <Table>
