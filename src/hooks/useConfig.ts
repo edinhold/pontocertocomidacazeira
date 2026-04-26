@@ -5,6 +5,10 @@ const defaultConfig: ConfigLoja = {
   whatsapp: "",
   taxaEntrega: 0,
   nomeRestaurante: "Ponto Certo - Comida Caseira",
+  corTema: "#ea384c",
+  corLetras: "#000000",
+  corBotoes: "#ea384c",
+  imagemFundo: "",
 };
 
 export function useConfig() {
