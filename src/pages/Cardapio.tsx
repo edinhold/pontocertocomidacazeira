@@ -225,7 +225,10 @@ const Cardapio = () => {
   const categoriasOrdenadas = [...new Set(pratos.map((p) => p.categoria))];
 
   return (
-    <div className="min-h-screen bg-muted relative">
+    <div 
+      className={`min-h-screen ${config.imagemFundo ? 'bg-black/40' : 'bg-muted'} relative transition-colors duration-500`}
+      style={config.imagemFundo ? { backdropFilter: 'blur(2px)' } : {}}
+    >
       {/* Header */}
       <header className="bg-primary text-primary-foreground py-6 px-4 text-center">
         <div className="max-w-2xl mx-auto">
