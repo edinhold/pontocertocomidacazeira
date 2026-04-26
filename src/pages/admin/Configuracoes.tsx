@@ -85,8 +85,22 @@ const Configuracoes = () => {
       toast.error("Informe o número do WhatsApp");
       return;
     }
-    await salvarConfigAsync(config);
-    toast.success("Configurações salvas com sucesso!");
+
+    setUploading(true);
+    try {
+      // Se tiver uma logo pendente, salva ela primeiro
+      if (previewFile) {
+        await uploadLogo(previewFile);
+        handleCancelUpload();
+      }
+
+      await salvarConfigAsync(config);
+      toast.success("Todas as configurações foram salvas com sucesso!");
+    } catch (error: any) {
+      toast.error("Erro ao salvar configurações: " + (error.message || "tente novamente"));
+    } finally {
+      setUploading(false);
+    }
   };
 
   const loadHistory = async () => {
@@ -163,9 +177,9 @@ const Configuracoes = () => {
                     {previewFile?.name} ({((previewFile?.size || 0) / 1024).toFixed(0)} KB)
                   </p>
                   <div className="flex gap-2">
-                    <Button onClick={handleConfirmUpload} disabled={uploading} size="sm">
+                    <Button onClick={handleSave} disabled={uploading} size="sm">
                       <Upload className="size-4 mr-1" />
-                      {uploading ? "Enviando..." : "Confirmar"}
+                      {uploading ? "Salvando..." : "Confirmar Alteração"}
                     </Button>
                     <Button onClick={handleCancelUpload} variant="outline" size="sm" disabled={uploading}>
                       <X className="size-4 mr-1" />
@@ -225,6 +239,12 @@ const Configuracoes = () => {
               Apenas números, sem espaços ou caracteres especiais. Ex: 11999999999
             </p>
           </div>
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={uploading} size="sm">
+              <Save className="size-4 mr-1" />
+              Salvar WhatsApp
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -240,12 +260,18 @@ const Configuracoes = () => {
               step="0.01"
               min="0"
               placeholder="0.00"
-              value={config.taxaEntrega || ""}
+              value={config.taxaEntrega}
               onChange={(e) => setConfig({ ...config, taxaEntrega: parseFloat(e.target.value) || 0 })}
             />
             <p className="text-xs text-muted-foreground">
               Este valor será exibido no cardápio online para o cliente. Deixe 0 para entrega grátis.
             </p>
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={uploading} size="sm">
+              <Save className="size-4 mr-1" />
+              Salvar Taxa
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -262,12 +288,18 @@ const Configuracoes = () => {
               onChange={(e) => setConfig({ ...config, nomeRestaurante: e.target.value })}
             />
           </div>
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={uploading} size="sm">
+              <Save className="size-4 mr-1" />
+              Salvar Nome
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
-      <Button onClick={handleSave} size="lg" className="w-full sm:w-auto">
+      <Button onClick={handleSave} size="lg" className="w-full sm:w-auto" disabled={uploading}>
         <Save className="size-4 mr-2" />
-        Salvar Configurações
+        {uploading ? "Salvando..." : "Salvar Configurações"}
       </Button>
     </div>
   );

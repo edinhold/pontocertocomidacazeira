@@ -67,20 +67,13 @@ export async function salvarConfigAsync(config: ConfigLoja) {
     { chave: "nome_restaurante", valor: config.nomeRestaurante },
   ];
 
-  for (const update of updates) {
-    // Try update first
-    const { data } = await supabase
-      .from("configuracoes")
-      .update({ valor: update.valor })
-      .eq("chave", update.chave)
-      .select();
+  const { error } = await supabase
+    .from("configuracoes")
+    .upsert(updates, { onConflict: 'chave' });
 
-    // If no row was updated, insert it
-    if (!data || data.length === 0) {
-      await supabase
-        .from("configuracoes")
-        .insert({ chave: update.chave, valor: update.valor });
-    }
+  if (error) {
+    console.error("Erro ao salvar no Supabase:", error);
+    throw error;
   }
 }
 
