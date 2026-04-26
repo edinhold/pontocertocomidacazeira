@@ -267,6 +267,9 @@ const MensagensProgramadas = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => handleSendNow(m)} title="Enviar agora">
+                          <Send className="size-4 text-primary" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => openEdit(m)}>
                           <Pencil className="size-4" />
                         </Button>
