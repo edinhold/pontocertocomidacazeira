@@ -120,7 +120,7 @@ const Garcom = () => {
             <CardContent>
               <Select value={mesaSelecionada} onValueChange={setMesaSelecionada}>
                 <SelectTrigger><SelectValue placeholder="Selecione a mesa" /></SelectTrigger>
-                <SelectContent>{mesas.map((m) => <SelectItem key={m} value={m.toString()}>Mesa {m}</SelectItem>)}</SelectContent>
+                <SelectContent>{mesas.map((m) => <SelectItem key={m.id} value={m.numero.toString()}>Mesa {m.numero}</SelectItem>)}</SelectContent>
               </Select>
             </CardContent>
           </Card>
