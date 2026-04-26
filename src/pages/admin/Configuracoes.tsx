@@ -279,9 +279,9 @@ const Configuracoes = () => {
         </CardContent>
       </Card>
 
-      <Button onClick={handleSave} size="lg" className="w-full sm:w-auto">
+      <Button onClick={handleSave} size="lg" className="w-full sm:w-auto" disabled={uploading}>
         <Save className="size-4 mr-2" />
-        Salvar Configurações
+        {uploading ? "Salvando..." : "Salvar Configurações"}
       </Button>
     </div>
   );
