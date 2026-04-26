@@ -73,6 +73,10 @@ export async function salvarConfigAsync(config: ConfigLoja) {
     { chave: "whatsapp", valor: config.whatsapp },
     { chave: "taxa_entrega", valor: config.taxaEntrega.toString() },
     { chave: "nome_restaurante", valor: config.nomeRestaurante },
+    ...(config.corTema ? [{ chave: "cor_tema", valor: config.corTema }] : []),
+    ...(config.corLetras ? [{ chave: "cor_letras", valor: config.corLetras }] : []),
+    ...(config.corBotoes ? [{ chave: "cor_botoes", valor: config.corBotoes }] : []),
+    ...(config.imagemFundo ? [{ chave: "imagem_fundo", valor: config.imagemFundo }] : []),
   ];
 
   const { error } = await supabase
