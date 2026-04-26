@@ -124,14 +124,14 @@ const Garcom = () => {
             <CardHeader className="pb-2"><CardTitle className="text-lg">Cardápio</CardTitle></CardHeader>
             <CardContent className="space-y-2">
               <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">Pratos</p>
-              {cardapio.filter((i) => i.tipo === "prato").map((item) => (
+              {pratos.map((item) => (
                 <Button key={item.id} variant="outline" className="w-full justify-between" onClick={() => addItem(item)}>
                   <span>{item.nome}</span>
                   <span className="text-muted-foreground">R$ {item.preco.toFixed(2)}</span>
                 </Button>
               ))}
               <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide pt-2">Bebidas</p>
-              {cardapio.filter((i) => i.tipo === "bebida").map((item) => (
+              {bebidas.map((item) => (
                 <Button key={item.id} variant="outline" className="w-full justify-between" onClick={() => addItem(item)}>
                   <span>{item.nome}</span>
                   <span className="text-muted-foreground">R$ {item.preco.toFixed(2)}</span>
