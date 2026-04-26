@@ -36,6 +36,10 @@ export async function getConfigAsync(): Promise<ConfigLoja> {
       if (row.chave === "whatsapp") config.whatsapp = row.valor;
       if (row.chave === "taxa_entrega") config.taxaEntrega = parseFloat(row.valor) || 0;
       if (row.chave === "nome_restaurante") config.nomeRestaurante = row.valor || defaultConfig.nomeRestaurante;
+      if (row.chave === "cor_tema") config.corTema = row.valor;
+      if (row.chave === "cor_letras") config.corLetras = row.valor;
+      if (row.chave === "cor_botoes") config.corBotoes = row.valor;
+      if (row.chave === "imagem_fundo") config.imagemFundo = row.valor;
     }
     return config;
   } catch {
