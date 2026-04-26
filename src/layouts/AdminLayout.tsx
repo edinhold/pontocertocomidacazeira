@@ -62,19 +62,21 @@ const AdminLayout = () => {
 
     const channel = supabase
       .channel('admin-global-orders')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pedidos' }, () => {
-        playAlert();
-        toast.success("🚨 TEM PEDIDO NOVO!", {
-          description: "Um novo pedido chegou no sistema. Verifique a lista de pedidos.",
-          duration: 15000,
-          position: "top-center",
-          action: {
-            label: "Ver Pedidos",
-            onClick: () => navigate("/admin/pedidos")
-          }
-        });
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          playAlert();
+          toast.success("🚨 TEM PEDIDO NOVO!", {
+            description: "Um novo pedido chegou no sistema. Verifique a lista de pedidos.",
+            duration: 15000,
+            position: "top-center",
+            action: {
+              label: "Ver Pedidos",
+              onClick: () => navigate("/admin/pedidos")
+            }
+          });
+        }
         
-        // Dispatch event for components to reload if needed
+        // Always dispatch event for components to reload (for inserts, updates, deletes)
         window.dispatchEvent(new Event("pedidos-updated"));
       })
       .subscribe();
