@@ -9,50 +9,52 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { getFuncionarios, salvarFuncionarios, type Funcionario } from "@/lib/funcionariosStore";
+import { getFuncionarios, salvarFuncionario, excluirFuncionario, type Funcionario } from "@/lib/funcionariosStore";
 
 const Funcionarios = () => {
-  const [funcionarios, setFuncionarios] = useState<Funcionario[]>(getFuncionarios());
+  const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ nome: "", email: "", cargo: "" as string, senha: "" });
 
+  const loadData = async () => {
+    setLoading(true);
+    const data = await getFuncionarios();
+    setFuncionarios(data);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    salvarFuncionarios(funcionarios);
-  }, [funcionarios]);
+    loadData();
+  }, []);
 
   const resetForm = () => { setForm({ nome: "", email: "", cargo: "", senha: "" }); setEditingId(null); };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.nome || !form.email || !form.cargo) { toast.error("Preencha os campos obrigatórios"); return; }
     if (!editingId && !form.senha) { toast.error("Defina uma senha para o funcionário"); return; }
 
-    // Check duplicate email
-    const duplicado = funcionarios.find((f) => f.email === form.email && f.id !== editingId);
-    if (duplicado) { toast.error("Já existe um funcionário com este email"); return; }
-
-    if (editingId) {
-      setFuncionarios((prev) =>
-        prev.map((f) =>
-          f.id === editingId
-            ? { ...f, nome: form.nome, email: form.email, cargo: form.cargo as Funcionario["cargo"], ...(form.senha ? { senha: form.senha } : {}) }
-            : f
-        )
-      );
-      toast.success("Funcionário atualizado!");
-    } else {
-      const novo: Funcionario = {
-        id: Date.now().toString(),
+    try {
+      await salvarFuncionario({
+        id: editingId || undefined,
         nome: form.nome,
         email: form.email,
         cargo: form.cargo as Funcionario["cargo"],
-        senha: form.senha,
-      };
-      setFuncionarios((prev) => [...prev, novo]);
-      toast.success("Funcionário cadastrado!");
+        senha: form.senha || (editingId ? (funcionarios.find(f => f.id === editingId)?.senha || "") : "")
+      });
+      
+      toast.success(editingId ? "Funcionário atualizado!" : "Funcionário cadastrado!");
+      setOpen(false);
+      resetForm();
+      loadData();
+    } catch (err: any) {
+      if (err.code === "23505") {
+        toast.error("Já existe um funcionário com este email");
+      } else {
+        toast.error("Erro ao salvar funcionário");
+      }
     }
-    setOpen(false);
-    resetForm();
   };
 
   const handleEdit = (f: Funcionario) => {
@@ -61,9 +63,14 @@ const Funcionarios = () => {
     setOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    setFuncionarios((prev) => prev.filter((x) => x.id !== id));
-    toast.success("Funcionário removido!");
+  const handleDelete = async (id: string) => {
+    try {
+      await excluirFuncionario(id);
+      toast.success("Funcionário removido!");
+      loadData();
+    } catch (err) {
+      toast.error("Erro ao remover funcionário");
+    }
   };
 
   return (
