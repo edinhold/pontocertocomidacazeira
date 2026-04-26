@@ -51,10 +51,33 @@ const Cardapio = () => {
 
   const [carrinho, setCarrinho] = useState<CartItem[]>([]);
   const [nome, setNome] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [endereco, setEndereco] = useState("");
   const [observacao, setObservacao] = useState("");
   const [tipoEntrega, setTipoEntrega] = useState<"entrega" | "retirada">("entrega");
   const [enviando, setEnviando] = useState(false);
+  const [carrinhoAberto, setCarrinhoAberto] = useState(false);
+  const [passo, setPasso] = useState<"carrinho" | "delivery">("carrinho");
+
+  useEffect(() => {
+    const userStr = localStorage.getItem("pontocerto_user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      if (user.tipo === "cliente") {
+        setNome(user.nome || "");
+        // Buscar dados extras se necessário
+        const fetchUserData = async () => {
+          const { data } = await supabase
+            .from("clientes")
+            .select("whatsapp")
+            .eq("id", user.id)
+            .single();
+          if (data) setWhatsapp(data.whatsapp || "");
+        };
+        fetchUserData();
+      }
+    }
+  }, []);
 
   const addToCart = (item: { id: string; nome: string; preco: number }, tipo: CartItem["tipo"]) => {
     setCarrinho((prev) => {
