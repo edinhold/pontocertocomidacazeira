@@ -57,10 +57,11 @@ interface CartItem {
 }
 
 const Cardapio = () => {
-  const { config, loading } = useConfig();
-  const pratos = getPratos().filter((p) => p.disponivel);
-  const bebidas = getBebidas();
-  const adicionais = getAdicionais();
+  const { config, loading: configLoading } = useConfig();
+  const [pratos, setPratos] = useState<Prato[]>([]);
+  const [bebidas, setBebidas] = useState<Bebida[]>([]);
+  const [adicionais, setAdicionais] = useState<Adicional[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [carrinho, setCarrinho] = useState<CartItem[]>([]);
   const [nome, setNome] = useState("");
@@ -71,6 +72,24 @@ const Cardapio = () => {
   const [enviando, setEnviando] = useState(false);
   const [carrinhoAberto, setCarrinhoAberto] = useState(false);
   const [passo, setPasso] = useState<"carrinho" | "delivery">("carrinho");
+
+  const loadData = async () => {
+    setLoading(true);
+    const [p, b, a] = await Promise.all([
+      getPratos(),
+      getBebidas(),
+      getAdicionais()
+    ]);
+    setPratos(p.filter(item => item.disponivel));
+    setBebidas(b);
+    setAdicionais(a);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
 
   useEffect(() => {
     const userStr = localStorage.getItem("pontocerto_user");

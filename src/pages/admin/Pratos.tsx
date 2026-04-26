@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,39 +10,60 @@ import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { getPratos, salvarPratos, type Prato } from "@/lib/pratosStore";
+import { getPratos, salvarPrato, excluirPrato, type Prato } from "@/lib/pratosStore";
 import ImageUpload from "@/components/ImageUpload";
 
 const categorias = ["Entrada", "Prato Principal", "Sobremesa", "Acompanhamento"];
 
 const Pratos = () => {
-  const [pratos, setPratos] = useState<Prato[]>(getPratos());
+  const [pratos, setPratos] = useState<Prato[]>([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ nome: "", descricao: "", preco: "", categoria: "", disponivel: true, imagem: undefined as string | undefined });
+
+  const loadPratos = async () => {
+    setLoading(true);
+    const data = await getPratos();
+    setPratos(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadPratos();
+    const handleUpdate = () => loadPratos();
+    window.addEventListener("pratos-updated", handleUpdate);
+    return () => window.removeEventListener("pratos-updated", handleUpdate);
+  }, []);
 
   const resetForm = () => {
     setForm({ nome: "", descricao: "", preco: "", categoria: "", disponivel: true, imagem: undefined });
     setEditingId(null);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.nome || !form.preco || !form.categoria) {
       toast.error("Preencha os campos obrigatórios");
       return;
     }
-    let updated: Prato[];
-    if (editingId) {
-      updated = pratos.map((p) => (p.id === editingId ? { ...p, nome: form.nome, descricao: form.descricao, preco: parseFloat(form.preco), categoria: form.categoria, disponivel: form.disponivel, imagem: form.imagem } : p));
-      toast.success("Prato atualizado!");
-    } else {
-      updated = [...pratos, { id: Date.now().toString(), nome: form.nome, descricao: form.descricao, preco: parseFloat(form.preco), categoria: form.categoria, disponivel: form.disponivel, imagem: form.imagem }];
-      toast.success("Prato adicionado!");
+    
+    try {
+      await salvarPrato({
+        id: editingId || undefined,
+        nome: form.nome,
+        descricao: form.descricao,
+        preco: parseFloat(form.preco),
+        categoria: form.categoria,
+        disponivel: form.disponivel,
+        imagem: form.imagem
+      });
+      
+      toast.success(editingId ? "Prato atualizado!" : "Prato adicionado!");
+      setOpen(false);
+      resetForm();
+    } catch (err) {
+      toast.error("Erro ao salvar prato");
     }
-    setPratos(updated);
-    salvarPratos(updated);
-    setOpen(false);
-    resetForm();
   };
 
   const handleEdit = (prato: Prato) => {
@@ -51,11 +72,13 @@ const Pratos = () => {
     setOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    const updated = pratos.filter((p) => p.id !== id);
-    setPratos(updated);
-    salvarPratos(updated);
-    toast.success("Prato removido!");
+  const handleDelete = async (id: string) => {
+    try {
+      await excluirPrato(id);
+      toast.success("Prato removido!");
+    } catch (err) {
+      toast.error("Erro ao excluir prato");
+    }
   };
 
   return (
@@ -116,7 +139,15 @@ const Pratos = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pratos.map((prato) => (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Carregando pratos...</TableCell>
+                </TableRow>
+              ) : pratos.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhum prato encontrado.</TableCell>
+                </TableRow>
+              ) : pratos.map((prato) => (
                 <TableRow key={prato.id}>
                   <TableCell>
                     {prato.imagem ? (

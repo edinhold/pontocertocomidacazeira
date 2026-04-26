@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      bebidas: {
+        Row: {
+          categoria: string
+          created_at: string
+          id: string
+          imagem: string | null
+          nome: string
+          preco: number
+          updated_at: string
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          id?: string
+          imagem?: string | null
+          nome: string
+          preco: number
+          updated_at?: string
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          id?: string
+          imagem?: string | null
+          nome?: string
+          preco?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           ativo: boolean
@@ -119,6 +149,42 @@ export type Database = {
           observacao_geral?: string | null
           status?: string
           total?: number
+        }
+        Relationships: []
+      }
+      pratos: {
+        Row: {
+          categoria: string
+          created_at: string
+          descricao: string | null
+          disponivel: boolean
+          id: string
+          imagem: string | null
+          nome: string
+          preco: number
+          updated_at: string
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          descricao?: string | null
+          disponivel?: boolean
+          id?: string
+          imagem?: string | null
+          nome: string
+          preco: number
+          updated_at?: string
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          descricao?: string | null
+          disponivel?: boolean
+          id?: string
+          imagem?: string | null
+          nome?: string
+          preco?: number
+          updated_at?: string
         }
         Relationships: []
       }
