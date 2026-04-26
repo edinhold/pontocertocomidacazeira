@@ -90,8 +90,9 @@ const Garcom = () => {
       if (pedido.observacaoGeral) {
         linhas.push("", `📝 *Observação:* ${pedido.observacaoGeral}`);
       }
-      const texto = encodeURIComponent(linhas.join("\n"));
-      window.open(`https://wa.me/55${config.whatsapp}?text=${texto}`, "_blank");
+      const texto = linhas.join("\n");
+      const url = formatWhatsAppUrl(config.whatsapp, texto);
+      window.open(url, "_blank");
     }
 
     toast.success(`Pedido enviado para a cozinha! Mesa ${mesaSelecionada}`);
