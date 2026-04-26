@@ -230,7 +230,13 @@ const Cardapio = () => {
       style={config.imagemFundo ? { backdropFilter: 'blur(2px)' } : {}}
     >
       {/* Header */}
-      <header className="bg-primary text-primary-foreground py-6 px-4 text-center">
+      <header 
+        className="py-6 px-4 text-center transition-colors duration-500"
+        style={{ 
+          backgroundColor: config.corTema || 'hsl(var(--primary))', 
+          color: isDark(config.corTema || '#ea384c') ? '#fff' : '#000' 
+        }}
+      >
         <div className="max-w-2xl mx-auto">
           <Logo size="md" />
           <h1 className="text-2xl font-bold mt-2">{config.nomeRestaurante}</h1>
