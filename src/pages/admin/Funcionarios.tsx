@@ -150,6 +150,7 @@ const Funcionarios = () => {
               ))}
             </TableBody>
           </Table>
+          )}
         </CardContent>
       </Card>
     </div>
