@@ -1,10 +1,30 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Minus, ShoppingCart, Send, Truck, UtensilsCrossed, Wine, CirclePlus } from "lucide-react";
+import {
+  Plus,
+  Minus,
+  ShoppingCart,
+  Send,
+  Truck,
+  UtensilsCrossed,
+  Wine,
+  CirclePlus,
+  ArrowRight,
+  ArrowLeft,
+  X
+} from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+} from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { getPratos, type Prato } from "@/lib/pratosStore";
 import { getBebidas, type Bebida } from "@/lib/bebidasStore";
@@ -12,6 +32,7 @@ import { getAdicionais, type Adicional } from "@/lib/adicionaisStore";
 import { registrarVenda } from "@/lib/vendasStore";
 import { adicionarPedido } from "@/lib/pedidosStore";
 import { useConfig } from "@/hooks/useConfig";
+import { supabase } from "@/integrations/supabase/client";
 import Logo from "@/components/Logo";
 
 interface CartItem {
