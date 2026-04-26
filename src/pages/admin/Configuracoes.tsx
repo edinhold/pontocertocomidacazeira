@@ -63,6 +63,33 @@ const Configuracoes = () => {
     e.target.value = "";
   };
 
+  const handleBgFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      toast.error("Formato inválido. Aceitos: JPG, PNG, SVG e WebP.");
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > MAX_SIZE) {
+      toast.error("Imagem muito grande. O tamanho máximo é 2MB.");
+      e.target.value = "";
+      return;
+    }
+
+    setBgPreviewFile(file);
+    setBgPreviewUrl(URL.createObjectURL(file));
+    e.target.value = "";
+  };
+
+  const handleCancelBgUpload = () => {
+    if (bgPreviewUrl) URL.revokeObjectURL(bgPreviewUrl);
+    setBgPreviewFile(null);
+    setBgPreviewUrl(null);
+  };
+
   const handleCancelUpload = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewFile(null);
