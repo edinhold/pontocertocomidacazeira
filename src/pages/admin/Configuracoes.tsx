@@ -267,6 +267,12 @@ const Configuracoes = () => {
               Este valor será exibido no cardápio online para o cliente. Deixe 0 para entrega grátis.
             </p>
           </div>
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={uploading} size="sm">
+              <Save className="size-4 mr-1" />
+              Salvar Taxa
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
