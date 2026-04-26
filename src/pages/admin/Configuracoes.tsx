@@ -27,10 +27,13 @@ const Configuracoes = () => {
   // Logo upload state
   const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [bgPreviewFile, setBgPreviewFile] = useState<File | null>(null);
+  const [bgPreviewUrl, setBgPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<Array<{ url_anterior: string | null; url_nova: string; alterado_em: string }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bgInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     getConfigAsync().then((c) => {
