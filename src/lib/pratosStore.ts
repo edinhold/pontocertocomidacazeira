@@ -17,6 +17,8 @@ const defaultPratos: Prato[] = [
   { id: "2", nome: "Frango à Parmegiana", descricao: "Filé de frango empanado com queijo e molho", preco: 28.0, categoria: "Prato Principal", disponivel: true },
 ];
 
+const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
 export async function getPratos(): Promise<Prato[]> {
   try {
     const { data, error } = await supabase
@@ -38,7 +40,6 @@ export async function getPratos(): Promise<Prato[]> {
       }));
     }
 
-    // Fallback to localStorage if database is empty (for migration)
     const localData = localStorage.getItem(STORAGE_KEY);
     return localData ? JSON.parse(localData) : defaultPratos;
   } catch (error) {
@@ -59,7 +60,7 @@ export async function salvarPrato(prato: Omit<Prato, "id"> & { id?: string }) {
   };
 
   let error;
-  if (prato.id && !prato.id.includes(".")) { // Local IDs are usually timestamps or small strings
+  if (prato.id && isUUID(prato.id)) {
     const { error: err } = await supabase
       .from("pratos")
       .update(data)
@@ -81,18 +82,18 @@ export async function salvarPrato(prato: Omit<Prato, "id"> & { id?: string }) {
 }
 
 export async function excluirPrato(id: string) {
-  const { error } = await supabase
-    .from("pratos")
-    .delete()
-    .eq("id", id);
+  if (isUUID(id)) {
+    const { error } = await supabase
+      .from("pratos")
+      .delete()
+      .eq("id", id);
 
-  if (error) {
-    console.error("Erro ao excluir prato:", error);
-    // If it's a local ID, we might need to handle it differently, 
-    // but moving to Supabase means we should have real IDs.
+    if (error) {
+      console.error("Erro ao excluir prato no banco:", error);
+      throw error;
+    }
   }
 
-  // Also remove from local storage if it exists there during migration
   const localData = localStorage.getItem(STORAGE_KEY);
   if (localData) {
     const pratos: Prato[] = JSON.parse(localData);
@@ -103,7 +104,6 @@ export async function excluirPrato(id: string) {
   window.dispatchEvent(new Event("pratos-updated"));
 }
 
-// Keep this for compatibility during transition if needed
 export function salvarPratos(pratos: Prato[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(pratos));
   window.dispatchEvent(new Event("pratos-updated"));
