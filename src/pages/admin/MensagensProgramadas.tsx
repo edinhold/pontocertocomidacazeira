@@ -36,10 +36,21 @@ const emptyForm = {
 };
 
 const MensagensProgramadas = () => {
+  const { config } = useConfig();
   const [mensagens, setMensagens] = useState<MensagemProgramada[]>(getMensagens());
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+
+  const handleSendNow = (m: MensagemProgramada) => {
+    if (!config.whatsapp) {
+      toast.error("Configure o WhatsApp nas configurações primeiro");
+      return;
+    }
+    const url = formatWhatsAppUrl(config.whatsapp, m.conteudo);
+    window.open(url, "_blank");
+    toast.success("Abrindo WhatsApp...");
+  };
 
   const refresh = () => setMensagens(getMensagens());
 
