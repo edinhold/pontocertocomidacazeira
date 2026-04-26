@@ -12,6 +12,7 @@ import { adicionarPedido, type ItemPedido } from "@/lib/pedidosStore";
 import { getConfig } from "@/lib/configStore";
 import { getPratos, type Prato } from "@/lib/pratosStore";
 import { getBebidas, type Bebida } from "@/lib/bebidasStore";
+import { formatWhatsAppUrl } from "@/lib/utils";
 
 const mesas = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
