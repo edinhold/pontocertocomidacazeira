@@ -30,16 +30,21 @@ const Adicionais = () => {
 
   const resetForm = () => { setForm({ nome: "", preco: "" }); setEditingId(null); };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.nome || !form.preco) { toast.error("Preencha todos os campos"); return; }
-    const updated = editingId
-      ? adicionais.map((a) => (a.id === editingId ? { ...a, nome: form.nome, preco: parseFloat(form.preco) } : a))
-      : [...adicionais, { id: Date.now().toString(), nome: form.nome, preco: parseFloat(form.preco) }];
-    setAdicionais(updated);
-    salvarAdicionais(updated);
-    toast.success(editingId ? "Adicional atualizado!" : "Adicional adicionado!");
-    setOpen(false);
-    resetForm();
+    try {
+      await salvarAdicional({
+        id: editingId || undefined,
+        nome: form.nome,
+        preco: parseFloat(form.preco)
+      });
+      toast.success(editingId ? "Adicional atualizado!" : "Adicional adicionado!");
+      setOpen(false);
+      resetForm();
+      loadAdicionais();
+    } catch (err) {
+      toast.error("Erro ao salvar adicional");
+    }
   };
 
   const handleEdit = (a: Adicional) => {
@@ -48,11 +53,14 @@ const Adicionais = () => {
     setOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    const updated = adicionais.filter((a) => a.id !== id);
-    setAdicionais(updated);
-    salvarAdicionais(updated);
-    toast.success("Adicional removido!");
+  const handleDelete = async (id: string) => {
+    try {
+      await excluirAdicional(id);
+      toast.success("Adicional removido!");
+      loadAdicionais();
+    } catch (err) {
+      toast.error("Erro ao excluir adicional");
+    }
   };
 
   return (
