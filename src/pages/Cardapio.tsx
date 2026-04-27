@@ -299,13 +299,29 @@ const Cardapio = () => {
             <h1 className="text-2xl font-bold mt-2">{config.nomeRestaurante}</h1>
             <p className="text-sm opacity-90 mt-1">Cardápio Digital</p>
           </div>
-          <div className="w-10">
-            {!isLogado && (
+          <div className="w-10 flex justify-end">
+            {!isLogado ? (
               <Link to="/login">
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+                <Button variant="ghost" size="icon" className="text-inherit hover:bg-white/20">
                   <User className="size-6" />
                 </Button>
               </Link>
+            ) : (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-inherit hover:bg-white/20"
+                onClick={() => {
+                  localStorage.removeItem("pontocerto_user");
+                  setIsLogado(false);
+                  setNome("");
+                  setWhatsapp("");
+                  setEndereco("");
+                  toast.success("Sessão encerrada");
+                }}
+              >
+                <X className="size-6" />
+              </Button>
             )}
           </div>
         </div>
