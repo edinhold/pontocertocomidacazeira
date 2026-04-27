@@ -34,7 +34,8 @@ const App = () => (
           <Toaster />
           <Sonner />
           <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<Cardapio />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="pratos" element={<Pratos />} />
