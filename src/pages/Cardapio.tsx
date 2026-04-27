@@ -101,6 +101,7 @@ const Cardapio = () => {
     if (userStr) {
       const user = JSON.parse(userStr);
       if (user.tipo === "cliente") {
+        setIsLogado(true);
         setNome(user.nome || "");
         // Buscar dados extras se necessário
         const fetchUserData = async () => {
