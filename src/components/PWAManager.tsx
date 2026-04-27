@@ -12,6 +12,8 @@ interface BeforeInstallPromptEvent extends Event {
 export function PWAManager() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   const {
     offlineReady: [offlineReady, setOfflineReady],
