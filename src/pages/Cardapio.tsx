@@ -166,6 +166,22 @@ const Cardapio = () => {
 
     setEnviando(true);
 
+    // Tentar cadastrar se não estiver logado e preencheu email/senha
+    if (!isLogado && email.trim() && senha.trim()) {
+      try {
+        const result = await cadastrarCliente(nome, email, senha, whatsapp);
+        if (result.success) {
+          const user = await autenticarCliente(email, senha);
+          if (user) {
+            localStorage.setItem("pontocerto_user", JSON.stringify({ id: user.id, nome: user.nome, tipo: "cliente" }));
+            setIsLogado(true);
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao realizar cadastro no checkout:", err);
+      }
+    }
+
     const linhas = [
       `🍽️ *PEDIDO - ${config.nomeRestaurante}*`,
       "",
