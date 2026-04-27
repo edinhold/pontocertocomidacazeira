@@ -41,7 +41,7 @@ const Login = () => {
     const cliente = await autenticarCliente(loginEmail, loginPassword);
     if (cliente) {
       localStorage.setItem("pontocerto_user", JSON.stringify({ id: cliente.id, nome: cliente.nome, tipo: "cliente" }));
-      navigate("/cardapio");
+      navigate("/");
       toast.success(`Bem-vindo(a), ${cliente.nome}!`);
       return;
     }
