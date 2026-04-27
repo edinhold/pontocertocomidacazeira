@@ -6,6 +6,7 @@ export interface Cliente {
   email: string;
   senha: string;
   whatsapp: string;
+  endereco: string;
   ativo: boolean;
   criadoEm: string;
 }
@@ -17,6 +18,7 @@ function rowToCliente(row: any): Cliente {
     email: row.email,
     senha: row.senha,
     whatsapp: row.whatsapp || "",
+    endereco: row.endereco || "",
     ativo: row.ativo,
     criadoEm: row.criado_em,
   };
