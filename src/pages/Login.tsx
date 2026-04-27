@@ -148,7 +148,7 @@ const Login = () => {
             </div>
           </div>
 
-          <Link to="/cardapio">
+          <Link to="/">
             <Button variant="outline" className="w-full gap-2">
               📋 Acessar Cardápio Digital
             </Button>
