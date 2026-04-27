@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { DynamicThemeProvider } from "./components/DynamicThemeProvider";
+import { PWAManager } from "./components/PWAManager";
 import Login from "./pages/Login";
 import AdminLayout from "./layouts/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
@@ -29,6 +30,7 @@ const App = () => (
     <TooltipProvider>
       <BrowserRouter>
         <DynamicThemeProvider>
+          <PWAManager />
           <Toaster />
           <Sonner />
           <Routes>
