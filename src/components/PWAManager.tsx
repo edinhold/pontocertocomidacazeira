@@ -49,11 +49,24 @@ export function PWAManager() {
   }, [needRefresh, updateServiceWorker]);
 
   useEffect(() => {
+    const isStandaloneMode = window.matchMedia("(display-mode: standalone)").matches || (window.navigator as any).standalone === true;
+    setIsStandalone(isStandaloneMode);
+    
+    const ua = window.navigator.userAgent;
+    const iOS = /iPad|iPhone|iPod/.test(ua);
+    setIsIOS(iOS);
+
+    if (!isStandaloneMode) {
+      if (iOS) {
+        // For iOS, we can't use beforeinstallprompt, so we show the banner anyway if not standalone
+        setShowInstallBanner(true);
+      }
+    }
+
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      // Only show banner if not already in standalone mode
-      if (!window.matchMedia("(display-mode: standalone)").matches) {
+      if (!isStandaloneMode) {
         setShowInstallBanner(true);
       }
     };
