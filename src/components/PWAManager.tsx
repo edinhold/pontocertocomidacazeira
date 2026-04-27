@@ -88,34 +88,40 @@ export function PWAManager() {
     setDeferredPrompt(null);
   };
 
-  if (!showInstallBanner) return null;
+  if (!showInstallBanner || isStandalone) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 animate-in fade-in slide-in-from-bottom-4 sm:left-auto sm:right-4 sm:w-96">
+    <div className="fixed bottom-4 left-4 right-4 z-[100] animate-in fade-in slide-in-from-bottom-4 sm:left-auto sm:right-4 sm:w-96">
       <div className="bg-primary text-primary-foreground p-4 rounded-lg shadow-lg flex items-center justify-between gap-4 border border-primary/20">
         <div className="flex items-center gap-3">
-          <div className="bg-primary-foreground/20 p-2 rounded-full">
+          <div className="bg-primary-foreground/20 p-2 rounded-full shrink-0">
             <Download className="h-5 w-5" />
           </div>
           <div>
             <p className="font-semibold text-sm">Instalar Aplicativo</p>
-            <p className="text-xs opacity-90">Tenha uma melhor experiência no seu celular</p>
+            <p className="text-xs opacity-90">
+              {isIOS 
+                ? "Toque em 'Compartilhar' e 'Adicionar à Tela de Início'" 
+                : "Tenha uma melhor experiência no seu celular"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button 
-            variant="secondary" 
-            size="sm" 
-            onClick={handleInstall}
-            className="h-8 px-3 text-xs font-bold"
-          >
-            Instalar
-          </Button>
+          {!isIOS && deferredPrompt && (
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={handleInstall}
+              className="h-8 px-3 text-xs font-bold whitespace-nowrap"
+            >
+              Instalar
+            </Button>
+          )}
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={() => setShowInstallBanner(false)}
-            className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+            className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20 shrink-0"
           >
             <X className="h-4 w-4" />
           </Button>
