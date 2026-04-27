@@ -106,8 +106,10 @@ const Configuracoes = () => {
     setUploading(true);
     try {
       await uploadLogo(previewFile);
-      toast.success("Logo atualizada com sucesso! Todas as páginas já refletem a mudança.");
+      toast.success("Logo atualizada com sucesso! Todos os usuários receberão a atualização.");
       handleCancelUpload();
+      // Forçar atualização do PWA para todos
+      await supabase.from('configuracoes').upsert({ chave: 'last_update', valor: new Date().toISOString() }, { onConflict: 'chave' });
     } catch (err: any) {
       toast.error("Erro ao enviar logo: " + (err.message || "tente novamente"));
     } finally {
@@ -138,7 +140,8 @@ const Configuracoes = () => {
       }
 
       await salvarConfigAsync(updatedConfig);
-      toast.success("Todas as configurações foram salvas com sucesso!");
+      await supabase.from('configuracoes').upsert({ chave: 'last_update', valor: new Date().toISOString() }, { onConflict: 'chave' });
+      toast.success("Configurações salvas e enviadas para todos os usuários!");
     } catch (error: any) {
       toast.error("Erro ao salvar configurações: " + (error.message || "tente novamente"));
     } finally {

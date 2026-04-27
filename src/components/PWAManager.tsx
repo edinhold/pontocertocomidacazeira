@@ -3,6 +3,7 @@ import { useRegisterSW } from "virtual:pwa-register/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Download, RefreshCw, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -34,6 +35,37 @@ export function PWAManager() {
       setOfflineReady(false);
     }
   }, [offlineReady, setOfflineReady]);
+
+  // Monitorar atualizações remotas via Supabase Realtime
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'configuracoes',
+          filter: 'chave=eq.last_update'
+        },
+        () => {
+          // Quando as configurações mudam, avisamos o usuário que há novidades
+          toast("O cardápio foi atualizado!", {
+            description: "Clique para carregar as novas informações.",
+            action: {
+              label: "Carregar",
+              onClick: () => window.location.reload(),
+            },
+            duration: 10000,
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   useEffect(() => {
     if (needRefresh) {
