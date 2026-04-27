@@ -31,6 +31,7 @@ import { getBebidas, type Bebida } from "@/lib/bebidasStore";
 import { getAdicionais, type Adicional } from "@/lib/adicionaisStore";
 import { registrarVenda } from "@/lib/vendasStore";
 import { adicionarPedido } from "@/lib/pedidosStore";
+import { cadastrarCliente, autenticarCliente } from "@/lib/clientesStore";
 import { useConfig } from "@/hooks/useConfig";
 import { supabase } from "@/integrations/supabase/client";
 import Logo from "@/components/Logo";
