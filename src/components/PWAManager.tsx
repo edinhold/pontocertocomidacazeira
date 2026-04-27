@@ -37,11 +37,14 @@ export function PWAManager() {
 
   useEffect(() => {
     if (needRefresh) {
-      toast("Nova versão disponível!", {
-        description: "Deseja atualizar para a versão mais recente?",
+      toast("Nova atualização disponível!", {
+        description: "Clique em atualizar para ver as novidades e melhorias.",
         action: {
-          label: "Atualizar",
-          onClick: () => updateServiceWorker(true),
+          label: "Atualizar Agora",
+          onClick: () => {
+            updateServiceWorker(true);
+            window.location.reload();
+          },
         },
         duration: Infinity,
       });
