@@ -30,6 +30,7 @@ const App = () => (
     <TooltipProvider>
       <BrowserRouter>
         <DynamicThemeProvider>
+          <PWAManager />
           <Toaster />
           <Sonner />
           <Routes>
