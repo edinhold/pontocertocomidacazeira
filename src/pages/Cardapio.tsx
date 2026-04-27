@@ -490,6 +490,18 @@ const Cardapio = () => {
                         <label className="text-xs font-medium text-muted-foreground">WhatsApp *</label>
                         <Input placeholder="(00) 00000-0000" type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
                       </div>
+                      {!isLogado && (
+                        <>
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-muted-foreground">E-mail (para salvar seu cadastro)</label>
+                            <Input placeholder="seu@email.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-muted-foreground">Senha (mínimo 6 caracteres)</label>
+                            <Input placeholder="••••••••" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} />
+                          </div>
+                        </>
+                      )}
                       {tipoEntrega === "entrega" && (
                         <div className="space-y-1">
                           <label className="text-xs font-medium text-muted-foreground">Endereço de entrega *</label>
