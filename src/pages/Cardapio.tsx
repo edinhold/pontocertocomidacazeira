@@ -15,8 +15,10 @@ import {
   CirclePlus,
   ArrowRight,
   ArrowLeft,
-  X
+  X,
+  User
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
@@ -31,6 +33,7 @@ import { getBebidas, type Bebida } from "@/lib/bebidasStore";
 import { getAdicionais, type Adicional } from "@/lib/adicionaisStore";
 import { registrarVenda } from "@/lib/vendasStore";
 import { adicionarPedido } from "@/lib/pedidosStore";
+import { cadastrarCliente, autenticarCliente } from "@/lib/clientesStore";
 import { useConfig } from "@/hooks/useConfig";
 import { supabase } from "@/integrations/supabase/client";
 import Logo from "@/components/Logo";
@@ -69,10 +72,13 @@ const Cardapio = () => {
   const [whatsapp, setWhatsapp] = useState("");
   const [endereco, setEndereco] = useState("");
   const [observacao, setObservacao] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
   const [tipoEntrega, setTipoEntrega] = useState<"entrega" | "retirada">("entrega");
   const [enviando, setEnviando] = useState(false);
   const [carrinhoAberto, setCarrinhoAberto] = useState(false);
   const [passo, setPasso] = useState<"carrinho" | "delivery">("carrinho");
+  const [isLogado, setIsLogado] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -97,6 +103,7 @@ const Cardapio = () => {
     if (userStr) {
       const user = JSON.parse(userStr);
       if (user.tipo === "cliente") {
+        setIsLogado(true);
         setNome(user.nome || "");
         // Buscar dados extras se necessário
         const fetchUserData = async () => {
@@ -160,6 +167,22 @@ const Cardapio = () => {
     }
 
     setEnviando(true);
+
+    // Tentar cadastrar se não estiver logado e preencheu email/senha
+    if (!isLogado && email.trim() && senha.trim()) {
+      try {
+        const result = await cadastrarCliente(nome, email, senha, whatsapp);
+        if (result.success) {
+          const user = await autenticarCliente(email, senha);
+          if (user) {
+            localStorage.setItem("pontocerto_user", JSON.stringify({ id: user.id, nome: user.nome, tipo: "cliente" }));
+            setIsLogado(true);
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao realizar cadastro no checkout:", err);
+      }
+    }
 
     const linhas = [
       `🍽️ *PEDIDO - ${config.nomeRestaurante}*`,
@@ -269,10 +292,38 @@ const Cardapio = () => {
           color: isDark(config.corTema || '#ea384c') ? '#fff' : '#000' 
         }}
       >
-        <div className="max-w-2xl mx-auto">
-          <Logo size="md" />
-          <h1 className="text-2xl font-bold mt-2">{config.nomeRestaurante}</h1>
-          <p className="text-sm opacity-90 mt-1">Cardápio Digital</p>
+        <div className="max-w-2xl mx-auto flex items-center justify-between px-4">
+          <div className="w-10"></div> {/* Espaçador para centralizar a logo */}
+          <div>
+            <Logo size="md" />
+            <h1 className="text-2xl font-bold mt-2">{config.nomeRestaurante}</h1>
+            <p className="text-sm opacity-90 mt-1">Cardápio Digital</p>
+          </div>
+          <div className="w-10 flex justify-end">
+            {!isLogado ? (
+              <Link to="/login">
+                <Button variant="ghost" size="icon" className="text-inherit hover:bg-white/20">
+                  <User className="size-6" />
+                </Button>
+              </Link>
+            ) : (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-inherit hover:bg-white/20"
+                onClick={() => {
+                  localStorage.removeItem("pontocerto_user");
+                  setIsLogado(false);
+                  setNome("");
+                  setWhatsapp("");
+                  setEndereco("");
+                  toast.success("Sessão encerrada");
+                }}
+              >
+                <X className="size-6" />
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -469,6 +520,18 @@ const Cardapio = () => {
                         <label className="text-xs font-medium text-muted-foreground">WhatsApp *</label>
                         <Input placeholder="(00) 00000-0000" type="tel" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
                       </div>
+                      {!isLogado && (
+                        <>
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-muted-foreground">E-mail (para salvar seu cadastro)</label>
+                            <Input placeholder="seu@email.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-muted-foreground">Senha (mínimo 6 caracteres)</label>
+                            <Input placeholder="••••••••" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} />
+                          </div>
+                        </>
+                      )}
                       {tipoEntrega === "entrega" && (
                         <div className="space-y-1">
                           <label className="text-xs font-medium text-muted-foreground">Endereço de entrega *</label>
