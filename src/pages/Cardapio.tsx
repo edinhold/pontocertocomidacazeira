@@ -70,10 +70,13 @@ const Cardapio = () => {
   const [whatsapp, setWhatsapp] = useState("");
   const [endereco, setEndereco] = useState("");
   const [observacao, setObservacao] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
   const [tipoEntrega, setTipoEntrega] = useState<"entrega" | "retirada">("entrega");
   const [enviando, setEnviando] = useState(false);
   const [carrinhoAberto, setCarrinhoAberto] = useState(false);
   const [passo, setPasso] = useState<"carrinho" | "delivery">("carrinho");
+  const [isLogado, setIsLogado] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
