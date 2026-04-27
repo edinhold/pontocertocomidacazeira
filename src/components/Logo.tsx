@@ -19,7 +19,7 @@ const Logo = ({ size = "md", className }: LogoProps) => {
   return (
     <img
       src={logoUrl || defaultLogo}
-      alt="Brigadeiros dos Sonhos - Doceria"
+      alt="Ponto Certo - Comida Caseira"
       className={cn(sizeMap[size], className)}
       onError={(e) => {
         (e.target as HTMLImageElement).src = defaultLogo;

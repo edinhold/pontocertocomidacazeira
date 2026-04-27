@@ -175,6 +175,7 @@ const Usuarios = () => {
                   <TableHead>Nome</TableHead>
                   <TableHead>E-mail</TableHead>
                   <TableHead>WhatsApp</TableHead>
+                  <TableHead>Endereço</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Cadastrado em</TableHead>
                   <TableHead className="w-28"></TableHead>
@@ -186,6 +187,7 @@ const Usuarios = () => {
                     <TableCell className="font-medium">{c.nome}</TableCell>
                     <TableCell>{c.email}</TableCell>
                     <TableCell>{c.whatsapp || "—"}</TableCell>
+                    <TableCell className="max-w-[200px] truncate" title={c.endereco}>{c.endereco || "—"}</TableCell>
                     <TableCell>
                       <Badge
                         variant={c.ativo ? "default" : "secondary"}
