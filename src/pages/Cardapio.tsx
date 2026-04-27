@@ -292,10 +292,22 @@ const Cardapio = () => {
           color: isDark(config.corTema || '#ea384c') ? '#fff' : '#000' 
         }}
       >
-        <div className="max-w-2xl mx-auto">
-          <Logo size="md" />
-          <h1 className="text-2xl font-bold mt-2">{config.nomeRestaurante}</h1>
-          <p className="text-sm opacity-90 mt-1">Cardápio Digital</p>
+        <div className="max-w-2xl mx-auto flex items-center justify-between px-4">
+          <div className="w-10"></div> {/* Espaçador para centralizar a logo */}
+          <div>
+            <Logo size="md" />
+            <h1 className="text-2xl font-bold mt-2">{config.nomeRestaurante}</h1>
+            <p className="text-sm opacity-90 mt-1">Cardápio Digital</p>
+          </div>
+          <div className="w-10">
+            {!isLogado && (
+              <Link to="/login">
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+                  <User className="size-6" />
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
