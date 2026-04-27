@@ -15,8 +15,10 @@ import {
   CirclePlus,
   ArrowRight,
   ArrowLeft,
-  X
+  X,
+  User
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
